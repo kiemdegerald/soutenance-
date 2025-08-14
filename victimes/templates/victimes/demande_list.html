@@ -1,0 +1,58 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Liste des Demandes - Gendarmerie{% endblock %}
+{% block breadcrumb %}Demandes d'Aide{% endblock %}
+
+{% block content %}
+<div class="chart-container">
+    <div class="chart-header">
+        <div>
+            <div class="chart-title">DEMANDES D'AIDE</div>
+            <div style="color: #6b7280; font-size: 0.9rem;">Gestion des demandes d'aide</div>
+        </div>
+        <div>
+            <a href="{% url 'demande_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouvelle Demande
+            </a>
+        </div>
+    </div>
+    
+    <div style="max-height: 600px; overflow-y: auto;">
+        {% for demande in demandes %}
+        <div style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
+            <div style="width: 40px; height: 40px; background: {% if demande.statut == 'validee' %}#10b98120{% elif demande.statut == 'soumise' %}#fbbf2420{% else %}#ef444420{% endif %}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                <i class="fas fa-hands-helping" style="color: {% if demande.statut == 'validee' %}#10b981{% elif demande.statut == 'soumise' %}#fbbf24{% else %}#ef4444{% endif %};"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-weight: 500; color: #1f2937;">{{ demande.get_type_demande_display }}</div>
+                <div style="font-size: 0.8rem; color: #6b7280;">Famille {{ demande.famille.id }} - {{ demande.famille.ville }}</div>
+                {% if demande.description %}
+                <div style="font-size: 0.8rem; color: #6b7280;">{{ demande.description|truncatechars:50 }}</div>
+                {% endif %}
+            </div>
+            <div style="text-align: right;">
+                <div style="padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 500; 
+                    {% if demande.statut == 'validee' %}background: #10b98120; color: #10b981;
+                    {% elif demande.statut == 'soumise' %}background: #fbbf2420; color: #fbbf24;
+                    {% elif demande.statut == 'refusee' %}background: #ef444420; color: #ef4444;
+                    {% else %}background: #6b728020; color: #6b7280;{% endif %}">
+                    {{ demande.get_statut_display }}
+                </div>
+                <div style="font-size: 0.7rem; color: #6b7280; margin-top: 4px;">
+                    {{ demande.date_creation|date:"d/m/Y" }}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; color: #6b7280;">
+            <i class="fas fa-hands-helping" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
+            <p>Aucune demande d'aide enregistrée</p>
+            <a href="{% url 'demande_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer la première demande
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

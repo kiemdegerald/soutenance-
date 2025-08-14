@@ -1,0 +1,122 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Confirmer Suppression - Gendarmerie{% endblock %}
+{% block breadcrumb %}Confirmer Suppression{% endblock %}
+
+{% block content %}
+<div class="chart-container">
+    <div class="chart-header">
+        <div>
+            <div class="chart-title">CONFIRMER LA SUPPRESSION</div>
+            <div style="color: #dc2626; font-size: 0.9rem;">Cette action est irréversible</div>
+        </div>
+    </div>
+    
+    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+            <i class="fas fa-exclamation-triangle" style="color: #dc2626; font-size: 1.5rem; margin-right: 12px;"></i>
+            <h4 style="color: #dc2626; margin: 0;">Attention - Suppression définitive</h4>
+        </div>
+        <p style="color: #7f1d1d; margin-bottom: 0;">
+            Êtes-vous sûr de vouloir supprimer la famille <strong>{{ famille.id }}</strong> ?
+            <br>Cette action supprimera également tous les membres et demandes associés.
+        </p>
+    </div>
+    
+    <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <h5 style="color: #374151; margin-bottom: 15px;">Informations de la famille :</h5>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <strong>ID :</strong> {{ famille.id }}
+            </div>
+            <div>
+                <strong>Ville :</strong> {{ famille.ville }}
+            </div>
+            <div>
+                <strong>Nombre de personnes :</strong> {{ famille.nombre_personnes }}
+            </div>
+        </div>
+        <div style="margin-top: 10px;">
+            <strong>Adresse :</strong> {{ famille.adresse }}
+        </div>
+        
+        {% if famille.membres.exists %}
+        <div style="margin-top: 15px;">
+            <strong>Membres ({{ famille.membres.count }}) :</strong>
+            <ul style="margin: 5px 0 0 20px; color: #6b7280;">
+                {% for membre in famille.membres.all %}
+                <li>{{ membre.prenom }} {{ membre.nom }} ({{ membre.lien_parente }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if famille.victimes.exists %}
+        <div style="margin-top: 15px;">
+            <strong>Victimes associées ({{ famille.victimes.count }}) :</strong>
+            <ul style="margin: 5px 0 0 20px; color: #6b7280;">
+                {% for victime in famille.victimes.all %}
+                <li>{{ victime.prenom }} {{ victime.nom }} - {{ victime.grade }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if famille.demandes.exists %}
+        <div style="margin-top: 15px;">
+            <strong>Demandes d'aide ({{ famille.demandes.count }}) :</strong>
+            <ul style="margin: 5px 0 0 20px; color: #6b7280;">
+                {% for demande in famille.demandes.all %}
+                <li>{{ demande.get_type_demande_display }} - {{ demande.get_statut_display }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    
+    <form method="post" style="display: flex; gap: 15px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i>Oui, supprimer définitivement
+        </button>
+        <a href="{% url 'famille_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Annuler et retourner
+        </a>
+    </form>
+</div>
+
+<style>
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

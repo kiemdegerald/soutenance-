@@ -1,0 +1,489 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard - Gendarmerie{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #94a3b8 75%, #64748b 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(148, 163, 184, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            z-index: 1000;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+        }
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            padding: 0 25px 30px 25px;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+        .sidebar-logo img {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+        }
+        .sidebar-logo h3 {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        /* Styles spécifiques par rôle */
+        .role-agent .sidebar {
+            background: rgba(255,255,255,0.95);
+            border-left: 4px solid #3b82f6;
+        }
+        .role-agent .sidebar-logo h3 {
+            color: #3b82f6;
+        }
+        .role-agent .sidebar-menu a {
+            color: #1f2937;
+        }
+        .role-agent .sidebar-menu a:hover, 
+        .role-agent .sidebar-menu a.active {
+            background: linear-gradient(90deg, #3b82f620, transparent);
+            color: #3b82f6;
+            border-right: 3px solid #3b82f6;
+        }
+        .role-agent .top-bar {
+            background: rgba(59, 130, 246, 0.15);
+        }
+        
+        .role-assistant .sidebar {
+            background: rgba(255,255,255,0.95);
+            border-left: 4px solid #f59e0b;
+        }
+        .role-assistant .sidebar-logo h3 {
+            color: #f59e0b;
+        }
+        .role-assistant .sidebar-menu a {
+            color: #374151;
+        }
+        .role-assistant .sidebar-menu a:hover, 
+        .role-assistant .sidebar-menu a.active {
+            background: linear-gradient(90deg, #f59e0b20, transparent);
+            color: #f59e0b;
+            border-right: 3px solid #f59e0b;
+        }
+        .role-assistant .top-bar {
+            background: rgba(251, 146, 60, 0.15);
+        }
+        
+        .role-responsable .sidebar, .role-admin .sidebar {
+            background: rgba(255,255,255,0.95);
+            border-left: 4px solid #dc2626;
+        }
+        .role-responsable .sidebar-logo h3, .role-admin .sidebar-logo h3 {
+            color: #dc2626;
+        }
+        .role-responsable .sidebar-menu a, .role-admin .sidebar-menu a {
+            color: #374151;
+        }
+        .role-responsable .sidebar-menu a:hover, 
+        .role-responsable .sidebar-menu a.active,
+        .role-admin .sidebar-menu a:hover, 
+        .role-admin .sidebar-menu a.active {
+            background: linear-gradient(90deg, #dc262620, transparent);
+            color: #dc2626;
+            border-right: 3px solid #dc2626;
+        }
+        .role-responsable .top-bar, .role-admin .top-bar {
+            background: rgba(220, 38, 38, 0.15);
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar-menu li {
+            margin: 5px 0;
+        }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 25px;
+            color: #6b7280;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: linear-gradient(90deg, #667eea20, transparent);
+            color: #667eea;
+            border-right: 3px solid #667eea;
+        }
+        .sidebar-menu i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .breadcrumb i {
+            margin: 0 10px;
+            font-size: 14px;
+        }
+        .breadcrumb .current {
+            color: #111827;
+            font-weight: 600;
+        }
+        .search-bar {
+            position: relative;
+            width: 400px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.9);
+            color: #1f2937;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .search-bar input::placeholder {
+            color: #6b7280;
+        }
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .notifications {
+            position: relative;
+            background: rgba(255,255,255,0.9);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f2937;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .user-avatar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1f2937;
+            cursor: pointer;
+        }
+        .user-avatar img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .stat-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        .stat-change {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .chart-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .chart-controls {
+            display: flex;
+            gap: 8px;
+        }
+        .chart-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .chart-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .chart-btn:not(.active) {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .search-bar {
+                width: 200px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="role-{{ user.role|default:'default' }}">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <img src="{% static 'images/OIP.webp' %}" alt="Logo">
+            <div>
+                <h3>Gendarmerie</h3>
+                <small style="color: #6b7280; font-size: 0.8rem; text-transform: uppercase; font-weight: 600;">
+                    {% if user.role == 'agent' %}Agent de Terrain
+                    {% elif user.role == 'assistant' %}Assistant Social
+                    {% elif user.role == 'responsable' %}Responsable
+                    {% elif user.role == 'admin' %}Administrateur
+                    {% else %}Utilisateur{% endif %}
+                </small>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            {% if user.role == 'agent' %}
+                <!-- Interface Agent Gendarmerie -->
+                <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Tableau de Bord
+                </a></li>
+                <li><a href="{% url 'victime_create' %}" class="{% if 'victime' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-user-plus"></i> Nouvelle Fiche Victime
+                </a></li>
+                <li><a href="{% url 'victime_list' %}" class="{% if 'victime' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-file-medical"></i> Mes Fiches Victimes
+                </a></li>
+                <li><a href="{% url 'famille_list' %}" class="{% if 'famille' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-users"></i> Familles Enregistrées
+                </a></li>
+                <li><a href="#" class="">
+                    <i class="fas fa-search"></i> Recherche Avancée
+                </a></li>
+                <li><a href="#" class="">
+                    <i class="fas fa-clipboard-list"></i> Mes Rapports
+                </a></li>
+                <li><a href="#" class="">
+                    <i class="fas fa-bell"></i> Notifications
+                </a></li>
+            {% elif user.role == 'assistant' %}
+                <!-- Interface Assistant Social -->
+                <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a></li>
+                <li><a href="{% url 'demande_create' %}" class="{% if 'demande' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-plus-circle"></i> Nouvelle Demande
+                </a></li>
+                <li><a href="{% url 'demande_list' %}" class="{% if 'demande' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-hand-holding-heart"></i> Demandes d'Aide
+                </a></li>
+                <li><a href="{% url 'famille_list' %}" class="{% if 'famille' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-users"></i> Familles
+                </a></li>
+                <li><a href="#" class="">
+                    <i class="fas fa-chart-line"></i> Suivi des Aides
+                </a></li>
+            {% elif user.role == 'responsable' or user.role == 'admin' %}
+                <!-- Interface Responsable/Admin -->
+                <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a></li>
+                <li><a href="{% url 'famille_list' %}" class="{% if 'famille' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-users"></i> Familles
+                </a></li>
+                <li><a href="{% url 'victime_list' %}" class="{% if 'victime' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-file-medical"></i> Fiches Victimes
+                </a></li>
+                <li><a href="{% url 'demande_list' %}" class="{% if 'demande' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-hand-holding-heart"></i> Demandes d'Aide
+                </a></li>
+                <li><a href="{% url 'demandes_a_valider' %}" class="{% if 'validation' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-check-circle"></i> Validation Demandes
+                </a></li>
+                <li><a href="#" class="">
+                    <i class="fas fa-chart-bar"></i> Statistiques
+                </a></li>
+                <li><a href="#" class="">
+                    <i class="fas fa-cog"></i> Paramètres
+                </a></li>
+            {% else %}
+                <!-- Interface par défaut -->
+                <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a></li>
+            {% endif %}
+            
+            <!-- Déconnexion pour tous -->
+            <li style="margin-top: auto; border-top: 1px solid #e5e7eb; padding-top: 15px;">
+                <a href="{% url 'logout' %}" class="">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="breadcrumb">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+                <i class="fas fa-chevron-right"></i>
+                <span class="current">{% block breadcrumb %}Default{% endblock %}</span>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Rechercher...">
+            </div>
+            <div class="user-info">
+                <div class="notifications">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="user-avatar">
+                    <img src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}&background=3b82f6&color=fff" alt="Avatar">
+                    <div>
+                        <span style="font-weight: 600; color: #1f2937;">{{ user.get_full_name|default:user.username }}</span>
+                        <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 500; color: #6b7280;">
+                            {% if user.role == 'agent' %}Agent
+                            {% elif user.role == 'assistant' %}Assistant
+                            {% elif user.role == 'responsable' %}Responsable
+                            {% elif user.role == 'admin' %}Admin
+                            {% else %}Utilisateur{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

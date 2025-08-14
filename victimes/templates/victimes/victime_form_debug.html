@@ -1,0 +1,60 @@
+{% extends 'victimes/base.html' %}
+
+{% block title %}Test Fiche Victime{% endblock %}
+{% block breadcrumb %}Test{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1>TEST - Formulaire Fiche Victime</h1>
+    
+    <p><strong>Utilisateur connecté:</strong> {{ user.username }}</p>
+    <p><strong>Rôle:</strong> {{ user.role }}</p>
+    <p><strong>Méthode:</strong> {{ request.method }}</p>
+    
+    {% if form %}
+        <h3>Formulaire trouvé ✓</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div style="margin: 10px 0;">
+                <label>Nom:</label>
+                {{ form.nom }}
+            </div>
+            
+            <div style="margin: 10px 0;">
+                <label>Prénom:</label>
+                {{ form.prenom }}
+            </div>
+            
+            <div style="margin: 10px 0;">
+                <label>Grade:</label>
+                {{ form.grade }}
+            </div>
+            
+            <div style="margin: 10px 0;">
+                <label>Date de décès:</label>
+                {{ form.date_deces }}
+            </div>
+            
+            <div style="margin: 10px 0;">
+                <label>Lieu de décès:</label>
+                {{ form.lieu_deces }}
+            </div>
+            
+            <div style="margin: 10px 0;">
+                <label>Acte de décès:</label>
+                {{ form.acte_deces }}
+            </div>
+            
+            <button type="submit">Enregistrer</button>
+        </form>
+    {% else %}
+        <h3 style="color: red;">Aucun formulaire trouvé ✗</h3>
+    {% endif %}
+    
+    {% if form.errors %}
+        <h3>Erreurs du formulaire:</h3>
+        {{ form.errors }}
+    {% endif %}
+</div>
+{% endblock %}

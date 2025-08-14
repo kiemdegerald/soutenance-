@@ -1,0 +1,12 @@
+django>=5.1.3
+mysqlclient
+# Utilitaires Python
+os
+sys
+pathlib
+# Pour la gestion des dates et heures
+tzdata
+# Pour les tests Django
+pytest-django
+# (optionnel) Pillow si tu utilises des images dans les modèles
+# pillow

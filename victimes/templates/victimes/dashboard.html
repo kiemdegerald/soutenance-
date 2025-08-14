@@ -1,0 +1,194 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Gendarmerie{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">TOTAL VICTIMES</div>
+                <div class="stat-value">{{ total_victimes|default:"1,247" }}</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    3.48% Depuis le mois dernier
+                </div>
+            </div>
+            <div class="stat-icon red">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">NOUVEAUX DOSSIERS</div>
+                <div class="stat-value">{{ nouveaux_dossiers|default:"89" }}</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    2.15% Depuis le mois dernier
+                </div>
+            </div>
+            <div class="stat-icon orange">
+                <i class="fas fa-folder-plus"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">AFFAIRES RÉSOLUES</div>
+                <div class="stat-value">{{ affaires_resolues|default:"156" }}</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    4.12% Depuis le mois dernier
+                </div>
+            </div>
+            <div class="stat-icon green">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">TAUX DE RÉSOLUTION</div>
+                <div class="stat-value">{{ taux_resolution|default:"78.5" }}%</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    1.8% Depuis le mois dernier
+                </div>
+            </div>
+            <div class="stat-icon blue">
+                <i class="fas fa-chart-line"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+    <!-- Main Chart -->
+    <div class="chart-container">
+        <div class="chart-header">
+            <div>
+                <div class="chart-title">APERÇU</div>
+                <div style="color: #6b7280; font-size: 0.9rem;">Évolution des dossiers</div>
+            </div>
+            <div class="chart-controls">
+                <button class="chart-btn active">Mois</button>
+                <button class="chart-btn">Semaine</button>
+            </div>
+        </div>
+        <div style="height: 300px; background: #1f2937; border-radius: 12px; position: relative; overflow: hidden;">
+            <canvas id="mainChart" style="width: 100%; height: 100%;"></canvas>
+            <!-- Temporary placeholder -->
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #9ca3af;">
+                <i class="fas fa-chart-area" style="font-size: 3rem; margin-bottom: 10px; display: block; text-align: center;"></i>
+                <p>Graphique des statistiques en cours de développement</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="chart-container">
+        <div class="chart-header">
+            <div>
+                <div class="chart-title">PERFORMANCE</div>
+                <div style="color: #6b7280; font-size: 0.9rem;">Total des interventions</div>
+            </div>
+        </div>
+        <div style="height: 300px; padding: 20px;">
+            <!-- Placeholder for bar chart -->
+            <div style="display: flex; align-items: end; height: 100%; gap: 10px;">
+                <div style="background: #ff6b6b; height: 60%; width: 20px; border-radius: 4px;"></div>
+                <div style="background: #ff6b6b; height: 80%; width: 20px; border-radius: 4px;"></div>
+                <div style="background: #ff6b6b; height: 45%; width: 20px; border-radius: 4px;"></div>
+                <div style="background: #ff6b6b; height: 90%; width: 20px; border-radius: 4px;"></div>
+                <div style="background: #ff6b6b; height: 75%; width: 20px; border-radius: 4px;"></div>
+                <div style="background: #ff6b6b; height: 55%; width: 20px; border-radius: 4px;"></div>
+                <div style="background: #ff6b6b; height: 100%; width: 20px; border-radius: 4px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="chart-container">
+    <div class="chart-header">
+        <div class="chart-title">ACTIVITÉS RÉCENTES</div>
+    </div>
+    <div style="max-height: 400px; overflow-y: auto;">
+        {% for activite in activites_recentes %}
+        <div style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
+            <div style="width: 40px; height: 40px; background: #667eea20; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                <i class="fas fa-{{ activite.icon|default:'file' }}" style="color: #667eea;"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-weight: 500; color: #1f2937;">{{ activite.description|default:"Nouvelle fiche victime créée" }}</div>
+                <div style="font-size: 0.8rem; color: #6b7280;">{{ activite.timestamp|default:"Il y a 5 minutes" }}</div>
+            </div>
+            <div style="color: #6b7280; font-size: 0.8rem;">{{ activite.user|default:user.username }}</div>
+        </div>
+        {% empty %}
+        <div style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
+            <div style="width: 40px; height: 40px; background: #667eea20; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                <i class="fas fa-file" style="color: #667eea;"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-weight: 500; color: #1f2937;">Nouvelle fiche victime créée</div>
+                <div style="font-size: 0.8rem; color: #6b7280;">Il y a 5 minutes</div>
+            </div>
+            <div style="color: #6b7280; font-size: 0.8rem;">{{ user.username }}</div>
+        </div>
+        <div style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
+            <div style="width: 40px; height: 40px; background: #10b98120; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                <i class="fas fa-check" style="color: #10b981;"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-weight: 500; color: #1f2937;">Demande d'aide approuvée</div>
+                <div style="font-size: 0.8rem; color: #6b7280;">Il y a 15 minutes</div>
+            </div>
+            <div style="color: #6b7280; font-size: 0.8rem;">{{ user.username }}</div>
+        </div>
+        <div style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
+            <div style="width: 40px; height: 40px; background: #fbbf2420; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                <i class="fas fa-users" style="color: #fbbf24;"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-weight: 500; color: #1f2937;">Nouvelle famille enregistrée</div>
+                <div style="font-size: 0.8rem; color: #6b7280;">Il y a 1 heure</div>
+            </div>
+            <div style="color: #6b7280; font-size: 0.8rem;">{{ user.username }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Placeholder pour les futurs graphiques Chart.js
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard chargé avec succès');
+    
+    // Animation des cartes statistiques
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+});
+</script>
+{% endblock %}

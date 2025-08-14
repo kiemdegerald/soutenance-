@@ -1,0 +1,534 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Tableau de Bord Agent - Gendarmerie{% endblock %}
+{% block breadcrumb %}Tableau de Bord Agent{% endblock %}
+
+{% block content %}
+<!-- Message de bienvenue spécifique Agent -->
+<div class="welcome-card" style="background: rgba(34, 197, 94, 0.1); border: 2px solid rgba(34, 197, 94, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 30px;">
+    <div style="display: flex; align-items: center;">
+        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px;">
+            <i class="fas fa-badge-check" style="color: white; font-size: 24px;"></i>
+        </div>
+        <div>
+            <h3 style="color: #16a34a; margin: 0; font-weight: 700;">Bienvenue, Agent {{ user.get_full_name|default:user.username }}</h3>
+            <p style="color: #6b7280; margin: 5px 0 0 0;">Interface dédiée aux agents de terrain - Gestion des fiches victimes et familles</p>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques Agent -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">MES FICHES CRÉÉES</div>
+                <div class="stat-value">{{ mes_fiches|default:"12" }}</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    Depuis ce mois
+                </div>
+            </div>
+            <div class="stat-icon green">
+                <i class="fas fa-file-medical"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">FAMILLES ENREGISTRÉES</div>
+                <div class="stat-value">{{ mes_familles|default:"8" }}</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    Ce mois
+                </div>
+            </div>
+            <div class="stat-icon blue">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">EN ATTENTE</div>
+                <div class="stat-value">{{ en_attente|default:"3" }}</div>
+                <div class="stat-change" style="color: #f59e0b;">
+                    <i class="fas fa-clock"></i>
+                    À traiter
+                </div>
+            </div>
+            <div class="stat-icon orange">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-title">TAUX COMPLÉTION</div>
+                <div class="stat-value">{{ taux_completion|default:"94" }}%</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    Excellent
+                </div>
+            </div>
+            <div class="stat-icon green">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides Agent -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+    <div class="chart-container">
+        <div class="chart-header">
+            <div>
+                <div class="chart-title">ACTIONS RAPIDES</div>
+                <div style="color: #6b7280; font-size: 0.9rem;">Raccourcis pour vos tâches principales</div>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px 0;">
+            <div style="text-decoration: none; cursor: pointer;" 
+               onclick="openVictimeModal()"
+               onmouseover="this.firstElementChild.style.transform='translateY(-5px) scale(1.02)'" 
+               onmouseout="this.firstElementChild.style.transform='translateY(0) scale(1)'">
+                <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 25px; border-radius: 15px; text-align: center; transition: transform 0.3s ease; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+                    <i class="fas fa-user-plus" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    <div style="font-weight: 600; font-size: 1.1rem;">Nouvelle Fiche Victime</div>
+                    <div style="font-size: 0.8rem; opacity: 0.9; margin-top: 5px;">Créer une nouvelle fiche</div>
+                </div>
+            </div>
+            <a href="{% url 'victime_list' %}" style="text-decoration: none;"
+               onmouseover="this.firstElementChild.style.transform='translateY(-5px) scale(1.02)'" 
+               onmouseout="this.firstElementChild.style.transform='translateY(0) scale(1)'">
+                <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 25px; border-radius: 15px; text-align: center; transition: transform 0.3s ease; cursor: pointer;">
+                    <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    <div style="font-weight: 600; font-size: 1.1rem;">Rechercher</div>
+                    <div style="font-size: 0.8rem; opacity: 0.9; margin-top: 5px;">Consulter les fiches</div>
+                </div>
+            </a>
+            <a href="#" style="text-decoration: none;">
+                <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 25px; border-radius: 15px; text-align: center; transition: transform 0.3s ease; cursor: pointer;">
+                    <i class="fas fa-clipboard-list" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    <div style="font-weight: 600; font-size: 1.1rem;">Rapports</div>
+                    <div style="font-size: 0.8rem; opacity: 0.9; margin-top: 5px;">Générer un rapport</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Mes dernières activités -->
+    <div class="chart-container">
+        <div class="chart-header">
+            <div class="chart-title">MES ACTIVITÉS</div>
+        </div>
+        <div style="max-height: 350px; overflow-y: auto;">
+            {% for activite in mes_activites %}
+            <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                <div style="width: 35px; height: 35px; background: #22c55e20; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                    <i class="fas fa-{{ activite.icon|default:'file' }}" style="color: #22c55e; font-size: 14px;"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500; color: #1f2937; font-size: 0.9rem;">{{ activite.description|default:"Fiche victime créée" }}</div>
+                    <div style="font-size: 0.7rem; color: #6b7280;">{{ activite.timestamp|default:"Il y a 2h" }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                <div style="width: 35px; height: 35px; background: #22c55e20; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                    <i class="fas fa-file" style="color: #22c55e; font-size: 14px;"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500; color: #1f2937; font-size: 0.9rem;">Fiche victime créée</div>
+                    <div style="font-size: 0.7rem; color: #6b7280;">Il y a 2h</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                <div style="width: 35px; height: 35px; background: #3b82f620; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                    <i class="fas fa-users" style="color: #3b82f6; font-size: 14px;"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500; color: #1f2937; font-size: 0.9rem;">Famille enregistrée</div>
+                    <div style="font-size: 0.7rem; color: #6b7280;">Il y a 4h</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; padding: 12px 0;">
+                <div style="width: 35px; height: 35px; background: #8b5cf620; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                    <i class="fas fa-edit" style="color: #8b5cf6; font-size: 14px;"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500; color: #1f2937; font-size: 0.9rem;">Fiche mise à jour</div>
+                    <div style="font-size: 0.7rem; color: #6b7280;">Hier</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Conseils et notifications Agent -->
+<div class="chart-container">
+    <div class="chart-header">
+        <div class="chart-title">CONSEILS ET NOTIFICATIONS</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; padding: 20px; border-radius: 12px;">
+            <i class="fas fa-lightbulb" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+            <h4 style="margin: 0; font-weight: 600;">Conseil du jour</h4>
+            <p style="margin: 8px 0 0 0; font-size: 0.9rem; opacity: 0.9;">
+                Pensez à vérifier que tous les documents nécessaires sont bien attachés à chaque fiche victime.
+            </p>
+        </div>
+        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 20px; border-radius: 12px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+            <h4 style="margin: 0; font-weight: 600;">Urgent</h4>
+            <p style="margin: 8px 0 0 0; font-size: 0.9rem; opacity: 0.9;">
+                3 dossiers nécessitent une mise à jour de vos informations avant validation.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour Nouvelle Fiche Victime -->
+<div id="victimeModal" class="modal-overlay" onclick="closeVictimeModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(5px);">
+    <div class="modal-content" onclick="event.stopPropagation()" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 15px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+        
+        <!-- Header du Modal -->
+        <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 20px; border-radius: 15px 15px 0 0; position: relative;">
+            <button onclick="closeVictimeModal()" style="position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: background 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                <i class="fas fa-times"></i>
+            </button>
+            <div style="display: flex; align-items: center;">
+                <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                    <i class="fas fa-user-plus" style="font-size: 20px;"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-weight: 700;">Nouvelle Fiche Victime</h3>
+                    <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Créer une nouvelle fiche pour une victime</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu du Modal -->
+        <div style="padding: 30px;">
+            <form id="victimeForm" method="post" action="{% url 'victime_create' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Messages d'erreur -->
+                <div id="modalMessages" style="display: none; margin-bottom: 20px;"></div>
+                
+                <!-- Informations personnelles -->
+                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+                    <h4 style="color: #1f2937; margin: 0 0 20px 0; font-weight: 600; display: flex; align-items: center;">
+                        <i class="fas fa-user" style="margin-right: 10px; color: #3b82f6;"></i>
+                        Informations personnelles
+                    </h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                                <i class="fas fa-user" style="margin-right: 5px;"></i> Nom *
+                            </label>
+                            <input type="text" name="nom" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;" onchange="validateField(this)" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                                <i class="fas fa-user" style="margin-right: 5px;"></i> Prénom *
+                            </label>
+                            <input type="text" name="prenom" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;" onchange="validateField(this)" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                            <i class="fas fa-medal" style="margin-right: 5px;"></i> Grade
+                        </label>
+                        <select name="grade" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease; background: white;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                            <option value="">Sélectionner un grade</option>
+                            <option value="Soldat">Soldat</option>
+                            <option value="Caporal">Caporal</option>
+                            <option value="Sergent">Sergent</option>
+                            <option value="Adjudant">Adjudant</option>
+                            <option value="Major">Major</option>
+                            <option value="Sous-Lieutenant">Sous-Lieutenant</option>
+                            <option value="Lieutenant">Lieutenant</option>
+                            <option value="Capitaine">Capitaine</option>
+                            <option value="Commandant">Commandant</option>
+                            <option value="Lieutenant-Colonel">Lieutenant-Colonel</option>
+                            <option value="Colonel">Colonel</option>
+                            <option value="Général">Général</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Informations du décès -->
+                <div style="background: #fef3f2; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+                    <h4 style="color: #1f2937; margin: 0 0 20px 0; font-weight: 600; display: flex; align-items: center;">
+                        <i class="fas fa-calendar-times" style="margin-right: 10px; color: #dc2626;"></i>
+                        Informations du décès
+                    </h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                                <i class="fas fa-calendar" style="margin-right: 5px;"></i> Date de décès *
+                            </label>
+                            <input type="date" name="date_deces" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                                <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> Lieu de décès *
+                            </label>
+                            <input type="text" name="lieu_deces" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;" placeholder="Ville, région, pays..." onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document -->
+                <div style="background: #f0f9ff; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+                    <h4 style="color: #1f2937; margin: 0 0 20px 0; font-weight: 600; display: flex; align-items: center;">
+                        <i class="fas fa-file-pdf" style="margin-right: 10px; color: #059669;"></i>
+                        Document officiel
+                    </h4>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                            <i class="fas fa-file-pdf" style="margin-right: 5px;"></i> Acte de décès (PDF)
+                        </label>
+                        <input type="file" name="acte_deces" accept=".pdf" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease; background: white;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                        <div style="font-size: 0.8rem; color: #6b7280; margin-top: 5px;">
+                            <i class="fas fa-info-circle"></i> Formats acceptés : PDF uniquement (max 10 MB)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div style="display: flex; gap: 15px; justify-content: flex-end; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                    <button type="button" onclick="closeVictimeModal()" style="padding: 12px 24px; background: #6b7280; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#4b5563'" onmouseout="this.style.background='#6b7280'">
+                        <i class="fas fa-times" style="margin-right: 8px;"></i>Annuler
+                    </button>
+                    <button type="submit" style="padding: 12px 24px; background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <i class="fas fa-save" style="margin-right: 8px;"></i>Enregistrer la fiche
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fonction pour ouvrir le modal de création de victime
+function openVictimeModal() {
+    const modal = document.getElementById('victimeModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Animation d'entrée
+    modal.style.opacity = '0';
+    setTimeout(() => {
+        modal.style.transition = 'opacity 0.3s ease';
+        modal.style.opacity = '1';
+    }, 10);
+}
+
+// Fonction pour fermer le modal de création de victime
+function closeVictimeModal() {
+    const modal = document.getElementById('victimeModal');
+    modal.style.transition = 'opacity 0.3s ease';
+    modal.style.opacity = '0';
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        
+        // Réinitialiser le formulaire
+        document.getElementById('victimeForm').reset();
+        
+        // Effacer les messages d'erreur
+        const messagesDiv = document.getElementById('modalMessages');
+        messagesDiv.style.display = 'none';
+        messagesDiv.innerHTML = '';
+    }, 300);
+}
+
+// Fonction de validation des champs
+function validateField(field) {
+    if (field.required && !field.value.trim()) {
+        field.style.borderColor = '#dc2626';
+        field.style.background = '#fef2f2';
+    } else {
+        field.style.borderColor = '#10b981';
+        field.style.background = '#f0fdf4';
+    }
+}
+
+// Gestion de la soumission du formulaire
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('victimeForm');
+    const modal = document.getElementById('victimeModal');
+    
+    // Fermer le modal en cliquant en dehors
+    window.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeVictimeModal();
+        }
+    });
+    
+    // Fermer le modal avec la touche Échap
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            closeVictimeModal();
+        }
+    });
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validation des champs requis
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.style.borderColor = '#dc2626';
+                field.style.background = '#fef2f2';
+                isValid = false;
+            }
+        });
+        
+        if (!isValid) {
+            showModalMessage('Veuillez remplir tous les champs obligatoires.', 'error');
+            return;
+        }
+        
+        // Soumission via AJAX
+        const formData = new FormData(form);
+        
+        // Afficher un indicateur de chargement
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Enregistrement...';
+        submitBtn.disabled = true;
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showModalMessage('Fiche victime créée avec succès !', 'success');
+                setTimeout(() => {
+                    closeVictimeModal();
+                    // Recharger la page pour actualiser les statistiques
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showModalMessage(data.message || 'Une erreur est survenue.', 'error');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showModalMessage('Une erreur est survenue lors de la création.', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // Animations pour les cartes d'action rapide
+    const actionCards = document.querySelectorAll('.chart-container a > div, .chart-container div[onclick] > div');
+    actionCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px) scale(1.05)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+    
+    // Animation d'entrée pour les cartes statistiques
+    const cards = document.querySelectorAll('.stat-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+    
+    // Fermer le modal avec la touche Échap
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('victimeModal');
+            if (modal.style.display !== 'none') {
+                closeVictimeModal();
+            }
+        }
+    });
+});
+
+// Fonction pour ouvrir le modal de création de victime
+function openVictimeModal() {
+    const modal = document.getElementById('victimeModal');
+    modal.style.display = 'block';
+    
+    // Reset du formulaire et des messages
+    document.getElementById('victimeForm').reset();
+    document.getElementById('modalMessages').style.display = 'none';
+    document.getElementById('modalMessages').innerHTML = '';
+    
+    // Focus sur le premier champ
+    setTimeout(() => {
+        const firstInput = modal.querySelector('input, select, textarea');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    }, 100);
+}
+
+// Fonction pour fermer le modal
+function closeVictimeModal() {
+    const modal = document.getElementById('victimeModal');
+    modal.style.display = 'none';
+}
+
+// Fonction pour afficher les messages dans le modal
+function showModalMessage(message, type) {
+    const messagesDiv = document.getElementById('modalMessages');
+    const bgColor = type === 'success' ? '#d1fae5' : '#fee2e2';
+    const textColor = type === 'success' ? '#065f46' : '#991b1b';
+    const borderColor = type === 'success' ? '#a7f3d0' : '#fca5a5';
+    const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+    
+    messagesDiv.innerHTML = `
+        <div style="background: ${bgColor}; color: ${textColor}; border: 1px solid ${borderColor}; padding: 12px; border-radius: 8px; display: flex; align-items: center;">
+            <i class="fas fa-${icon}" style="margin-right: 10px;"></i>
+            ${message}
+        </div>
+    `;
+    messagesDiv.style.display = 'block';
+    
+    // Faire défiler vers le haut du modal pour voir le message
+    const modalContent = messagesDiv.closest('.modal-content');
+    modalContent.scrollTop = 0;
+}
+</script>
+{% endblock %}

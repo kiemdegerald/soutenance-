@@ -1,0 +1,651 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Liste des Victimes - Gendarmerie{% endblock %}
+{% block breadcrumb %}Fiches Victimes{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Animation de rotation pour le spinner de chargement */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animation d'apparition douce pour les modals */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Style pour les modals avec animation */
+.modal-content-animated {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Effet de survol pour les cartes */
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+}
+
+/* Styles pour les boutons d'action */
+.action-button {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.action-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="chart-container">
+    <div class="chart-header">
+        <div>
+            <div class="chart-title">FICHES VICTIMES</div>
+            <div style="color: #6b7280; font-size: 0.9rem;">Gestion des fiches victimes</div>
+        </div>
+        <div>
+            <a href="{% url 'victime_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouvelle Fiche
+            </a>
+        </div>
+    </div>
+    
+    <div style="max-height: 600px; overflow-y: auto;">
+        {% for victime in victimes %}
+        <div class="card-hover" style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; padding: 20px; transition: all 0.3s ease;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div style="width: 50px; height: 50px; background: #667eea20; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px;">
+                        <i class="fas fa-user" style="color: #667eea; font-size: 1.2rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #1f2937; font-size: 1.1rem;">{{ victime.prenom }} {{ victime.nom }}</div>
+                        <div style="font-size: 0.9rem; color: #6b7280; margin: 3px 0;">{{ victime.nationalite|default:"Non spécifiée" }} - {{ victime.sexe }}</div>
+                        <div style="font-size: 0.8rem; color: #ef4444;">Type: {{ victime.type_incident|default:"Non spécifié" }}</div>
+                        <div style="font-size: 0.8rem; color: #6b7280;">Créé le {{ victime.date_creation|date:"d/m/Y à H:i" }}</div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    {% if victime.famille %}
+                        <div style="background: #10b98120; color: #059669; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; text-align: center;">
+                            <i class="fas fa-check-circle"></i> Famille enregistrée
+                        </div>
+                        <button onclick="openMembresModal({{ victime.famille.id }})" 
+                                style="background: #8b5cf6; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;"
+                                onmouseover="this.style.background='#7c3aed'" 
+                                onmouseout="this.style.background='#8b5cf6'">
+                            <i class="fas fa-user-plus"></i> Ajouter Membres
+                        </button>
+                    {% else %}
+                        <button onclick="openFamilleModal({{ victime.id }})" 
+                                style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;"
+                                onmouseover="this.style.background='#059669'" 
+                                onmouseout="this.style.background='#10b981'">
+                            <i class="fas fa-users"></i> Ajouter Famille
+                        </button>
+                        <div style="background: #f5950920; color: #d97706; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; text-align: center;">
+                            <i class="fas fa-exclamation-triangle"></i> Famille manquante
+                        </div>
+                    {% endif %}
+                    
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="viewVictime({{ victime.id }})" 
+                                style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;"
+                                title="Voir détails">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="editVictime({{ victime.id }})" 
+                                style="background: #f59e0b; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;"
+                                title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; color: #6b7280;">
+            <i class="fas fa-user-injured" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
+            <p>Aucune fiche victime enregistrée</p>
+            <a href="{% url 'victime_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer la première fiche
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal pour ajouter une famille -->
+<div id="familleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+    <div style="background: white; margin: 2% auto; padding: 0; border-radius: 15px; width: 90%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 15px 15px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-weight: 600;">
+                <i class="fas fa-users"></i> Ajouter une Famille
+            </h3>
+            <span onclick="closeFamilleModal()" style="font-size: 1.5rem; cursor: pointer; font-weight: bold;">&times;</span>
+        </div>
+        <form id="familleForm" style="padding: 25px;">
+            {% csrf_token %}
+            <input type="hidden" id="victime_id_famille" name="victime_id">
+            
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1.1rem;">
+                    <i class="fas fa-home" style="color: #10b981; margin-right: 8px;"></i>Nom de Famille *
+                </label>
+                <input type="text" name="nom_famille" required 
+                       placeholder="Ex: Famille Dubois, Famille Martin..." 
+                       style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                       onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 3px rgba(16, 185, 129, 0.1)';"
+                       onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-map-marker-alt" style="color: #3b82f6; margin-right: 8px;"></i>Adresse Complète
+                    </label>
+                    <textarea name="adresse" rows="4" 
+                              placeholder="Numéro, rue, ville, code postal..."
+                              style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; resize: vertical; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                              onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)';"
+                              onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';"></textarea>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-phone" style="color: #8b5cf6; margin-right: 8px;"></i>Téléphone
+                    </label>
+                    <input type="tel" name="telephone" 
+                           placeholder="Ex: +223 XX XX XX XX"
+                           style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                           onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)';"
+                           onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                    
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-wallet" style="color: #f59e0b; margin-right: 8px;"></i>Situation Économique
+                    </label>
+                    <select name="situation_economique" 
+                            style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                            onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 3px rgba(245, 158, 11, 0.1)';"
+                            onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                        <option value="stable">💰 Stable</option>
+                        <option value="precaire">⚠️ Précaire</option>
+                        <option value="difficile">❌ Difficile</option>
+                        <option value="aisee">✨ Aisée</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                    <i class="fas fa-info-circle" style="color: #6b7280; margin-right: 8px;"></i>Informations Complémentaires
+                </label>
+                <textarea name="informations_complementaires" rows="4" 
+                          placeholder="Ajoutez ici toute information importante sur la famille (composition, besoins spéciaux, situation particulière...)"
+                          style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; resize: vertical; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                          onfocus="this.style.borderColor='#6b7280'; this.style.boxShadow='0 0 0 3px rgba(107, 114, 128, 0.1)';"
+                          onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';"></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 15px; padding-top: 25px; border-top: 2px solid #f3f4f6;">
+                <button type="button" onclick="closeFamilleModal()" 
+                        style="background: linear-gradient(135deg, #6b7280, #4b5563); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(107, 114, 128, 0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(107, 114, 128, 0.4)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(107, 114, 128, 0.3)';">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="submit" 
+                        style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(16, 185, 129, 0.4)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(16, 185, 129, 0.3)';">
+                    <i class="fas fa-save"></i> Enregistrer Famille
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal pour ajouter des membres de famille -->
+<div id="membresModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+    <div style="background: white; margin: 2% auto; padding: 0; border-radius: 15px; width: 90%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 20px; border-radius: 15px 15px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-weight: 600;">
+                <i class="fas fa-user-plus"></i> Ajouter un Membre de Famille
+            </h3>
+            <span onclick="closeMembresModal()" style="font-size: 1.5rem; cursor: pointer; font-weight: bold;">&times;</span>
+        </div>
+        <form id="membresForm" style="padding: 25px;">
+            {% csrf_token %}
+            <input type="hidden" id="famille_id_membre" name="famille_id">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-user" style="color: #8b5cf6; margin-right: 8px;"></i>Prénom *
+                    </label>
+                    <input type="text" name="prenom" required 
+                           placeholder="Ex: Jean, Marie, Ahmed..."
+                           style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                           onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)';"
+                           onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-user-tag" style="color: #8b5cf6; margin-right: 8px;"></i>Nom *
+                    </label>
+                    <input type="text" name="nom" required 
+                           placeholder="Ex: Dupont, Martin, Traoré..."
+                           style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                           onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)';"
+                           onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-calendar-alt" style="color: #3b82f6; margin-right: 8px;"></i>Date de Naissance
+                    </label>
+                    <input type="date" name="date_naissance" 
+                           style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                           onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)';"
+                           onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-venus-mars" style="color: #ec4899; margin-right: 8px;"></i>Sexe
+                    </label>
+                    <select name="sexe" 
+                            style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                            onfocus="this.style.borderColor='#ec4899'; this.style.boxShadow='0 0 0 3px rgba(236, 72, 153, 0.1)';"
+                            onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                        <option value="M">👨 Masculin</option>
+                        <option value="F">👩 Féminin</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-heart" style="color: #ef4444; margin-right: 8px;"></i>Relation avec Victime *
+                    </label>
+                    <select name="relation_victime" required 
+                            style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                            onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 3px rgba(239, 68, 68, 0.1)';"
+                            onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                        <option value="">👥 Sélectionner la relation...</option>
+                        <option value="parent">👨‍👩‍👦 Parent</option>
+                        <option value="enfant">🧒 Enfant</option>
+                        <option value="conjoint">💏 Conjoint/Conjointe</option>
+                        <option value="frere_soeur">👫 Frère/Sœur</option>
+                        <option value="grand_parent">👴👵 Grand-parent</option>
+                        <option value="petit_enfant">👶 Petit-enfant</option>
+                        <option value="oncle_tante">👨‍👩‍👧‍👦 Oncle/Tante</option>
+                        <option value="cousin">👨‍👩‍👧‍👦 Cousin/Cousine</option>
+                        <option value="autre">❓ Autre</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                    <i class="fas fa-briefcase" style="color: #f59e0b; margin-right: 8px;"></i>Profession
+                </label>
+                <input type="text" name="profession" 
+                       placeholder="Ex: Enseignant, Commerçant, Étudiant, Sans emploi..."
+                       style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                       onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 3px rgba(245, 158, 11, 0.1)';"
+                       onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-phone" style="color: #06b6d4; margin-right: 8px;"></i>Téléphone
+                    </label>
+                    <input type="tel" name="telephone" 
+                           placeholder="Ex: +223 XX XX XX XX"
+                           style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                           onfocus="this.style.borderColor='#06b6d4'; this.style.boxShadow='0 0 0 3px rgba(6, 182, 212, 0.1)';"
+                           onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-envelope" style="color: #8b5cf6; margin-right: 8px;"></i>Email
+                    </label>
+                    <input type="email" name="email" 
+                           placeholder="Ex: membre@exemple.com"
+                           style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                           onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)';"
+                           onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1f2937; font-size: 1rem;">
+                    <i class="fas fa-info-circle" style="color: #6b7280; margin-right: 8px;"></i>Informations Complémentaires
+                </label>
+                <textarea name="informations_complementaires" rows="4" 
+                          placeholder="Ajoutez ici des informations importantes sur ce membre (particularités, besoins spéciaux, remarques...)"
+                          style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; resize: vertical; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                          onfocus="this.style.borderColor='#6b7280'; this.style.boxShadow='0 0 0 3px rgba(107, 114, 128, 0.1)';"
+                          onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';"></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 15px; padding-top: 25px; border-top: 2px solid #f3f4f6;">
+                <button type="button" onclick="closeMembresModal()" 
+                        style="background: linear-gradient(135deg, #6b7280, #4b5563); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(107, 114, 128, 0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(107, 114, 128, 0.4)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(107, 114, 128, 0.3)';">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="submit" 
+                        style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(139, 92, 246, 0.4)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(139, 92, 246, 0.3)';">
+                    <i class="fas fa-user-plus"></i> Ajouter Membre
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal pour voir les détails d'une victime -->
+<div id="detailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto;">
+    <div style="background: white; margin: 1% auto; padding: 0; border-radius: 20px; width: 95%; max-width: 1000px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;">
+        <!-- En-tête du modal -->
+        <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 25px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+            <div style="position: absolute; bottom: -30px; left: -30px; width: 80px; height: 80px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
+            <div style="z-index: 1;">
+                <h2 style="margin: 0; font-weight: 700; font-size: 1.5rem;">
+                    <i class="fas fa-user-circle" style="margin-right: 12px; font-size: 1.8rem;"></i>
+                    Détails de la Victime
+                </h2>
+                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Informations complètes du dossier</p>
+            </div>
+            <span onclick="closeDetailsModal()" style="font-size: 1.8rem; cursor: pointer; font-weight: bold; z-index: 1; padding: 5px; border-radius: 50%; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='transparent'">&times;</span>
+        </div>
+        
+        <!-- Contenu du modal -->
+        <div style="padding: 30px;">
+            <div id="victimeDetailsContent">
+                <!-- Le contenu sera injecté ici par JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fonction pour récupérer le token CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Fonctions pour gérer les modals
+function openFamilleModal(victimeId) {
+    const modal = document.getElementById('familleModal');
+    const victimeInput = document.getElementById('victime_id_famille');
+    
+    if (!modal) {
+        console.error('familleModal not found');
+        return;
+    }
+    if (!victimeInput) {
+        console.error('victime_id_famille input not found');
+        return;
+    }
+    
+    victimeInput.value = victimeId;
+    modal.style.display = 'block';
+    console.log('Modal should now be visible');
+}
+
+function closeFamilleModal() {
+    document.getElementById('familleModal').style.display = 'none';
+    document.getElementById('familleForm').reset();
+}
+
+function openMembresModal(familleId) {
+    document.getElementById('famille_id_membre').value = familleId;
+    document.getElementById('membresModal').style.display = 'block';
+}
+
+function closeMembresModal() {
+    document.getElementById('membresModal').style.display = 'none';
+    document.getElementById('membresForm').reset();
+}
+
+// Fonctions pour le modal de détails
+function closeDetailsModal() {
+    document.getElementById('detailsModal').style.display = 'none';
+}
+
+// Fonctions pour voir et éditer les victimes
+function viewVictime(victimeId) {
+    console.log('viewVictime called with victimeId:', victimeId);
+    const modal = document.getElementById('detailsModal');
+    if (!modal) {
+        console.error('detailsModal not found');
+        return;
+    }
+    
+    // Ouvrir le modal et charger les données
+    modal.style.display = 'block';
+    document.getElementById('victimeDetailsContent').innerHTML = `
+        <div style="text-align: center; padding: 40px;">
+            <div style="width: 50px; height: 50px; border: 3px solid #3b82f6; border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+            <p style="color: #6b7280; font-size: 1.1rem;">Chargement des détails...</p>
+        </div>
+    `;
+    
+    // Récupérer les données via AJAX
+    fetch('/victime/details/' + victimeId + '/', {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('victimeDetailsContent').innerHTML = generateVictimeDetailsHTML(data.victime);
+        } else {
+            document.getElementById('victimeDetailsContent').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #ef4444;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                    <h3>Erreur lors du chargement</h3>
+                    <p>${data.message || 'Impossible de charger les détails de la victime.'}</p>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        document.getElementById('victimeDetailsContent').innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #ef4444;">
+                <i class="fas fa-wifi" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                <h3>Erreur de connexion</h3>
+                <p>Impossible de charger les détails. Vérifiez votre connexion.</p>
+            </div>
+        `;
+    });
+}
+
+function generateVictimeDetailsHTML(victime) {
+    return `
+        <!-- Section Informations Personnelles -->
+        <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 15px; padding: 25px; margin-bottom: 25px; border-left: 5px solid #3b82f6;">
+            <h3 style="margin: 0 0 20px 0; color: #1e293b; font-weight: 700; display: flex; align-items: center;">
+                <i class="fas fa-user" style="background: #3b82f6; color: white; padding: 8px; border-radius: 50%; margin-right: 12px; font-size: 1rem;"></i>
+                Informations Personnelles
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Nom</div>
+                    <div style="color: #1e293b; font-size: 1.1rem; font-weight: 600;">${victime.nom || 'Non spécifié'}</div>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Prénom</div>
+                    <div style="color: #1e293b; font-size: 1.1rem; font-weight: 600;">${victime.prenom || 'Non spécifié'}</div>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Grade</div>
+                    <div style="color: #1e293b; font-size: 1.1rem; font-weight: 600;">${victime.grade || 'Non spécifié'}</div>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Date de Décès</div>
+                    <div style="color: #1e293b; font-size: 1.1rem; font-weight: 600;">${victime.date_deces || 'Non spécifiée'}</div>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Lieu de Décès</div>
+                    <div style="color: #1e293b; font-size: 1.1rem; font-weight: 600;">${victime.lieu_deces || 'Non spécifié'}</div>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Acte de Décès</div>
+                    <div style="color: #1e293b; font-size: 1.1rem; font-weight: 600;">
+                        ${victime.acte_deces ? `<a href="${victime.acte_deces}" target="_blank" style="color: #3b82f6; text-decoration: none;"><i class="fas fa-file-pdf"></i> Voir l'acte</a>` : 'Non fourni'}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Famille -->
+        ${victime.famille ? `
+            <div style="background: linear-gradient(135deg, #f0f9ff, #dbeafe); border-radius: 15px; padding: 25px; margin-bottom: 25px; border-left: 5px solid #8b5cf6;">
+                <h3 style="margin: 0 0 20px 0; color: #1e293b; font-weight: 700; display: flex; align-items: center;">
+                    <i class="fas fa-users" style="background: #8b5cf6; color: white; padding: 8px; border-radius: 50%; margin-right: 12px; font-size: 1rem;"></i>
+                    Famille Associée
+                </h3>
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Nom de Famille</div>
+                    <div style="color: #1e293b; font-size: 1.1rem; font-weight: 600; margin-bottom: 15px;">${victime.famille.nom_famille}</div>
+                    
+                    ${victime.famille.membres && victime.famille.membres.length > 0 ? `
+                        <div style="color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 10px;">Membres de la Famille</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                            ${victime.famille.membres.map(membre => `
+                                <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border-left: 3px solid #8b5cf6;">
+                                    <div style="font-weight: 600; color: #1e293b;">${membre.prenom} ${membre.nom}</div>
+                                    <div style="font-size: 0.8rem; color: #64748b;">${membre.relation_victime_display}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : '<div style="color: #64748b; font-style: italic;">Aucun membre enregistré</div>'}
+                </div>
+            </div>
+        ` : `
+            <div style="background: linear-gradient(135deg, #fffbeb, #fef3c7); border-radius: 15px; padding: 25px; border-left: 5px solid #f59e0b;">
+                <h3 style="margin: 0 0 15px 0; color: #1e293b; font-weight: 700; display: flex; align-items: center;">
+                    <i class="fas fa-exclamation-circle" style="background: #f59e0b; color: white; padding: 8px; border-radius: 50%; margin-right: 12px; font-size: 1rem;"></i>
+                    Famille
+                </h3>
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center;">
+                    <i class="fas fa-users" style="font-size: 2rem; color: #f59e0b; margin-bottom: 10px;"></i>
+                    <p style="color: #64748b; margin: 0;">Aucune famille associée à cette victime</p>
+                </div>
+            </div>
+        `}
+
+
+    `;
+}
+
+function editVictime(victimeId) {
+    // À implémenter : ouvrir un modal d'édition ou rediriger vers une page d'édition
+    window.location.href = '/victimes/' + victimeId + '/modifier/';
+}
+
+// Gestion de la soumission du formulaire famille
+document.getElementById('familleForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/famille/ajouter/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Famille ajoutée avec succès !');
+            closeFamilleModal();
+            location.reload(); // Recharger la page pour voir les changements
+        } else {
+            alert('Erreur lors de l\'ajout de la famille : ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'ajout de la famille');
+    });
+});
+
+// Gestion de la soumission du formulaire membre
+document.getElementById('membresForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/membre/ajouter/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Membre ajouté avec succès !');
+            closeMembresModal();
+            location.reload(); // Recharger la page pour voir les changements
+        } else {
+            alert('Erreur lors de l\'ajout du membre : ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'ajout du membre');
+    });
+});
+
+// Fermer les modals en cliquant en dehors
+window.onclick = function(event) {
+    const familleModal = document.getElementById('familleModal');
+    const membresModal = document.getElementById('membresModal');
+    
+    if (event.target === familleModal) {
+        closeFamilleModal();
+    }
+    if (event.target === membresModal) {
+        closeMembresModal();
+    }
+}
+</script>
+{% endblock %}
