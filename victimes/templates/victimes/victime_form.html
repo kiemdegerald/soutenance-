@@ -1,0 +1,110 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Nouvelle Fiche Victime - Gendarmerie{% endblock %}
+{% block breadcrumb %}Nouvelle Fiche Victime{% endblock %}
+
+{% block content %}
+<div class="chart-container">
+    <div class="chart-header">
+        <div>
+            <div class="chart-title">NOUVELLE FICHE VICTIME</div>
+            <div style="color: #6b7280; font-size: 0.9rem;">Créer une nouvelle fiche victime</div>
+        </div>
+        <div>
+            <a href="{% url 'victime_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+    
+    <!-- Affichage des messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" style="margin-bottom: 20px; padding: 12px; border-radius: 8px; 
+                {% if message.tags == 'success' %}background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;
+                {% elif message.tags == 'error' %}background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;
+                {% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                    <i class="fas fa-user"></i> Nom
+                </label>
+                {{ form.nom }}
+                {% if form.nom.errors %}
+                    <div style="color: #dc2626; font-size: 0.875rem; margin-top: 4px;">{{ form.nom.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                    <i class="fas fa-user"></i> Prénom
+                </label>
+                {{ form.prenom }}
+                {% if form.prenom.errors %}
+                    <div style="color: #dc2626; font-size: 0.875rem; margin-top: 4px;">{{ form.prenom.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                    <i class="fas fa-medal"></i> Grade
+                </label>
+                {{ form.grade }}
+                {% if form.grade.errors %}
+                    <div style="color: #dc2626; font-size: 0.875rem; margin-top: 4px;">{{ form.grade.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                    <i class="fas fa-calendar"></i> Date de décès
+                </label>
+                {{ form.date_deces }}
+                {% if form.date_deces.errors %}
+                    <div style="color: #dc2626; font-size: 0.875rem; margin-top: 4px;">{{ form.date_deces.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                <i class="fas fa-map-marker-alt"></i> Lieu de décès
+            </label>
+            {{ form.lieu_deces }}
+            {% if form.lieu_deces.errors %}
+                <div style="color: #dc2626; font-size: 0.875rem; margin-top: 4px;">{{ form.lieu_deces.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div style="margin-bottom: 30px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                <i class="fas fa-file-pdf"></i> Acte de décès
+            </label>
+            {{ form.acte_deces }}
+            {% if form.acte_deces.errors %}
+                <div style="color: #dc2626; font-size: 0.875rem; margin-top: 4px;">{{ form.acte_deces.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div style="display: flex; gap: 15px;">
+            <button type="submit" style="padding: 12px 24px; background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                <i class="fas fa-save" style="margin-right: 8px;"></i>Enregistrer la fiche
+            </button>
+            <a href="{% url 'victime_list' %}" style="padding: 12px 24px; background: #6b7280; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">
+                <i class="fas fa-times" style="margin-right: 8px;"></i>Annuler
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

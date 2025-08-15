@@ -401,7 +401,7 @@
                 <li><a href="{% url 'famille_list' %}" class="{% if 'famille' in request.resolver_match.url_name %}active{% endif %}">
                     <i class="fas fa-users"></i> Familles
                 </a></li>
-                <li><a href="#" class="">
+                <li><a href="{% url 'suivi_aides' %}" class="{% if request.resolver_match.url_name == 'suivi_aides' %}active{% endif %}">
                     <i class="fas fa-chart-line"></i> Suivi des Aides
                 </a></li>
             {% elif user.role == 'responsable' or user.role == 'admin' %}

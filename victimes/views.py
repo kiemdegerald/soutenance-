@@ -38,20 +38,66 @@ def rapport_familles_aidees(request):
 @role_required(['responsable', 'admin'])
 def demande_valider(request, demande_id):
     demande = get_object_or_404(DemandeAide, pk=demande_id)
-    if demande.statut != 'validee':
-        demande.statut = 'validee'
-        demande.valide_par = request.user
-        demande.date_validation = timezone.now()
-        demande.save()
-        # Journalisation
-        JournalAction.objects.create(
-            utilisateur=request.user,
-            action="Validation de demande",
-            details=f"Demande {demande.id} validée pour la famille {demande.famille.id}"
-        )
-        messages.success(request, "Demande validée avec succès.")
-    else:
-        messages.info(request, "Cette demande est déjà validée.")
+    
+    if request.method == 'POST':
+        if demande.statut != 'validee':
+            demande.statut = 'validee'
+            demande.valide_par = request.user
+            demande.date_validation = timezone.now()
+            demande.save()
+            # Journalisation
+            JournalAction.objects.create(
+                utilisateur=request.user,
+                action="Validation de demande",
+                details=f"Demande {demande.id} validée pour la famille {demande.famille.id}"
+            )
+            
+            if request.headers.get('Content-Type') == 'application/json':
+                return JsonResponse({'success': True, 'message': 'Demande validée avec succès.'})
+            else:
+                messages.success(request, "Demande validée avec succès.")
+        else:
+            if request.headers.get('Content-Type') == 'application/json':
+                return JsonResponse({'success': False, 'message': 'Cette demande est déjà validée.'})
+            else:
+                messages.info(request, "Cette demande est déjà validée.")
+    
+    if request.headers.get('Content-Type') == 'application/json':
+        return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
+    
+    return redirect('famille_list')
+
+# Refus des demandes (responsable/admin)
+@role_required(['responsable', 'admin'])
+def demande_refuser(request, demande_id):
+    demande = get_object_or_404(DemandeAide, pk=demande_id)
+    
+    if request.method == 'POST':
+        if demande.statut == 'soumise':
+            demande.statut = 'refusee'
+            demande.valide_par = request.user
+            demande.date_validation = timezone.now()
+            demande.save()
+            # Journalisation
+            JournalAction.objects.create(
+                utilisateur=request.user,
+                action="Refus de demande",
+                details=f"Demande {demande.id} refusée pour la famille {demande.famille.id}"
+            )
+            
+            if request.headers.get('Content-Type') == 'application/json':
+                return JsonResponse({'success': True, 'message': 'Demande refusée avec succès.'})
+            else:
+                messages.success(request, "Demande refusée avec succès.")
+        else:
+            if request.headers.get('Content-Type') == 'application/json':
+                return JsonResponse({'success': False, 'message': 'Cette demande ne peut pas être refusée.'})
+            else:
+                messages.info(request, "Cette demande ne peut pas être refusée.")
+    
+    if request.headers.get('Content-Type') == 'application/json':
+        return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
+    
     return redirect('famille_list')
 
 # Famille CRUD
@@ -116,13 +162,13 @@ def famille_delete(request, pk):
     return render(request, 'victimes/famille_confirm_delete.html', {'famille': famille})
 
 # FicheVictime CRUD
-@role_required(['agent', 'responsable', 'admin'])
+@role_required(['agent', 'assistant', 'responsable', 'admin'])
 def victime_list(request):
     if request.user.role == 'agent':
         # Les agents ne voient que leurs propres fiches victimes
         victimes = FicheVictime.objects.filter(cree_par=request.user).order_by('-date_creation')
     else:
-        # Les responsables et admins voient toutes les fiches
+        # Les assistants, responsables et admins voient toutes les fiches
         victimes = FicheVictime.objects.all().order_by('-date_creation')
     return render(request, 'victimes/victime_list.html', {'victimes': victimes})
 
@@ -207,12 +253,51 @@ def membre_create(request, famille_id):
     return render(request, 'victimes/membre_form.html', {'form': form, 'famille': famille})
 
 # DemandeAide CRUD (création)
-@login_required
+@role_required(['assistant', 'responsable', 'admin'])
 def demande_list(request):
-    demandes = DemandeAide.objects.all().order_by('-date_creation')
-    return render(request, 'victimes/demande_list.html', {'demandes': demandes})
+    if request.user.role == 'assistant':
+        # Pour les assistants sociaux, montrer les victimes avec leurs familles pour pouvoir créer des demandes
+        victimes = FicheVictime.objects.filter(famille__isnull=False).order_by('-date_creation')
+        demandes = DemandeAide.objects.all().order_by('-date_creation')
+        context = {
+            'victimes': victimes,
+            'demandes': demandes,
+            'show_victimes': True  # Flag pour indiquer qu'on montre les victimes
+        }
+        return render(request, 'victimes/demande_list.html', context)
+    else:
+        # Pour les responsables et admins, montrer seulement les demandes
+        demandes = DemandeAide.objects.all().order_by('-date_creation')
+        return render(request, 'victimes/demande_list.html', {'demandes': demandes})
 
-@role_required(['assistant'])
+@login_required
+def suivi_aides(request):
+    """Vue pour le suivi des aides avec filtrage par statut"""
+    # Récupérer toutes les demandes triées par date de création
+    demandes = DemandeAide.objects.all().select_related('famille', 'cree_par', 'valide_par').order_by('-date_creation')
+    
+    # Statistiques par statut
+    stats = {
+        'total': demandes.count(),
+        'en_attente': demandes.filter(statut='soumise').count(),
+        'validees': demandes.filter(statut='validee').count(),
+        'refusees': demandes.filter(statut='refusee').count(),
+    }
+    
+    # Filtrage par statut si demandé
+    statut_filtre = request.GET.get('statut')
+    if statut_filtre and statut_filtre in ['soumise', 'validee', 'refusee']:
+        demandes = demandes.filter(statut=statut_filtre)
+    
+    context = {
+        'demandes': demandes,
+        'stats': stats,
+        'statut_filtre': statut_filtre
+    }
+    
+    return render(request, 'victimes/suivi_aides.html', context)
+
+@role_required(['assistant', 'responsable', 'admin'])
 def demande_create(request):
     if request.method == 'POST':
         form = DemandeAideForm(request.POST)
@@ -225,6 +310,43 @@ def demande_create(request):
     else:
         form = DemandeAideForm()
     return render(request, 'victimes/demande_form.html', {'form': form})
+
+@role_required(['assistant'])
+def demande_create_ajax(request):
+    """Vue AJAX pour créer une demande d'aide"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
+    
+    try:
+        famille_id = request.POST.get('famille_id')
+        famille = get_object_or_404(Famille, id=famille_id)
+        
+        # Créer la demande d'aide
+        demande = DemandeAide.objects.create(
+            famille=famille,
+            type_demande=request.POST.get('type_demande'),
+            description=request.POST.get('description'),
+            statut='soumise',  # Statut par défaut
+            cree_par=request.user
+        )
+        
+        # Journalisation
+        JournalAction.objects.create(
+            utilisateur=request.user,
+            action="Création demande d'aide via AJAX",
+            details=f"Demande {demande.get_type_demande_display()} créée pour la famille {famille.nom_famille} (ID: {demande.id})"
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Demande d\'aide soumise avec succès.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Erreur lors de la création de la demande: {str(e)}'
+        })
 
 
 # Dashboard
@@ -260,6 +382,37 @@ def dashboard_view(request):
             'taux_completion': 94,  # Exemple
         }
         return render(request, 'victimes/dashboard_agent.html', context)
+    
+    elif request.user.role == 'assistant':
+        # Statistiques assistant social
+        mes_demandes = DemandeAide.objects.filter(cree_par=request.user).count()
+        demandes_validees = DemandeAide.objects.filter(cree_par=request.user, statut='validee').count()
+        demandes_en_attente = DemandeAide.objects.filter(cree_par=request.user, statut='soumise').count()
+        demandes_refusees = DemandeAide.objects.filter(cree_par=request.user, statut='refusee').count()
+        
+        # Familles suivies (familles pour lesquelles j'ai créé des demandes)
+        familles_suivies = Famille.objects.filter(demandes__cree_par=request.user).distinct().count()
+        
+        # Calcul du taux de validation de mes demandes
+        taux_validation = (demandes_validees / mes_demandes * 100) if mes_demandes > 0 else 0
+        
+        # Mes activités récentes
+        mes_activites = JournalAction.objects.filter(utilisateur=request.user).order_by('-date_action')[:5]
+        
+        # Demandes récentes créées par moi
+        demandes_recentes = DemandeAide.objects.filter(cree_par=request.user).order_by('-date_creation')[:5]
+        
+        context = {
+            'mes_demandes': mes_demandes,
+            'demandes_validees': demandes_validees,
+            'demandes_en_attente': demandes_en_attente,
+            'demandes_refusees': demandes_refusees,
+            'familles_suivies': familles_suivies,
+            'taux_validation': round(taux_validation, 1),
+            'mes_activites': mes_activites,
+            'demandes_recentes': demandes_recentes,
+        }
+        return render(request, 'victimes/dashboard_assistant.html', context)
     
     # Dashboard général pour autres rôles
     context = {
@@ -297,7 +450,7 @@ def logout_view(request):
     return redirect('login')
 
 # Vues AJAX pour ajouter famille et membres depuis la liste des victimes
-@role_required(['agent', 'responsable', 'admin'])
+@role_required(['agent', 'assistant', 'responsable', 'admin'])
 def ajouter_famille_ajax(request):
     if request.method == 'POST':
         try:
@@ -305,8 +458,11 @@ def ajouter_famille_ajax(request):
             victime = get_object_or_404(FicheVictime, id=victime_id)
             
             # Vérifier que l'agent ne peut ajouter une famille qu'à ses propres victimes
+            # Les assistants ne peuvent pas ajouter de familles
             if request.user.role == 'agent' and victime.cree_par != request.user:
                 return JsonResponse({'success': False, 'message': 'Vous ne pouvez ajouter une famille qu\'aux victimes que vous avez créées.'})
+            elif request.user.role == 'assistant':
+                return JsonResponse({'success': False, 'message': 'Les assistants sociaux ne peuvent pas créer de familles.'})
             
             # Vérifier si la victime a déjà une famille
             if victime.famille:
@@ -315,7 +471,6 @@ def ajouter_famille_ajax(request):
             # Créer la famille
             famille = Famille.objects.create(
                 nom_famille=request.POST.get('nom_famille'),
-                type_famille=request.POST.get('type_famille', 'nucleaire'),
                 adresse=request.POST.get('adresse', ''),
                 telephone=request.POST.get('telephone', ''),
                 situation_economique=request.POST.get('situation_economique', 'stable'),
@@ -340,7 +495,7 @@ def ajouter_famille_ajax(request):
     
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
 
-@role_required(['agent', 'responsable', 'admin'])
+@role_required(['agent', 'assistant', 'responsable', 'admin'])
 def ajouter_membre_ajax(request):
     if request.method == 'POST':
         try:
@@ -348,8 +503,11 @@ def ajouter_membre_ajax(request):
             famille = get_object_or_404(Famille, id=famille_id)
             
             # Vérifier que l'agent ne peut ajouter un membre qu'aux familles de ses propres victimes
+            # Les assistants ne peuvent pas ajouter de membres
             if request.user.role == 'agent' and not famille.victimes.filter(cree_par=request.user).exists():
                 return JsonResponse({'success': False, 'message': 'Vous ne pouvez ajouter des membres qu\'aux familles des victimes que vous avez créées.'})
+            elif request.user.role == 'assistant':
+                return JsonResponse({'success': False, 'message': 'Les assistants sociaux ne peuvent pas ajouter de membres aux familles.'})
             
             # Créer le membre
             membre = MembreFamille.objects.create(
@@ -379,32 +537,36 @@ def ajouter_membre_ajax(request):
     
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
 
-@role_required(['agent', 'responsable', 'admin'])
+@role_required(['agent', 'assistant', 'responsable', 'admin'])
 def victime_details_ajax(request, victime_id):
     """Vue AJAX pour récupérer les détails complets d'une victime"""
     try:
         victime = get_object_or_404(FicheVictime, id=victime_id)
         
         # Vérifier les permissions : agent ne peut voir que ses propres victimes
+        # Les assistants, responsables et admins peuvent voir toutes les victimes
         if request.user.role == 'agent' and victime.cree_par != request.user:
             return JsonResponse({'success': False, 'message': 'Vous n\'avez pas l\'autorisation de voir cette victime.'})
         
         # Préparer les données de la victime
         victime_data = {
             'id': victime.id,
+            'nom_complet': f"{victime.prenom} {victime.nom}",
             'prenom': victime.prenom,
             'nom': victime.nom,
-            'date_naissance': victime.date_naissance.strftime('%d/%m/%Y') if victime.date_naissance else None,
-            'sexe': victime.get_sexe_display() if victime.sexe else None,
+            'date_naissance': victime.date_naissance.strftime('%Y-%m-%d') if victime.date_naissance else '',
+            'sexe': victime.sexe,
+            'sexe_display': victime.get_sexe_display() if victime.sexe else None,
             'nationalite': victime.nationalite,
-            'statut_civil': victime.get_statut_civil_display() if victime.statut_civil else None,
+            'statut_civil': victime.statut_civil,
+            'etat_civil': victime.get_statut_civil_display() if victime.statut_civil else '',
             'profession': victime.profession,
+            'adresse': victime.adresse,
             'grade': victime.grade,
-            'date_deces': victime.date_deces.strftime('%d/%m/%Y') if victime.date_deces else None,
-            'date_deces_raw': victime.date_deces.strftime('%Y-%m-%d') if victime.date_deces else None,
+            'date_deces': victime.date_deces.strftime('%Y-%m-%d') if victime.date_deces else '',
+            'date_deces_display': victime.date_deces.strftime('%d/%m/%Y') if victime.date_deces else None,
             'lieu_deces': victime.lieu_deces,
             'acte_deces': victime.acte_deces.url if victime.acte_deces else None,
-            'adresse': victime.adresse,
             'telephone': victime.telephone,
             'email': victime.email,
             'type_incident': victime.type_incident,
@@ -421,7 +583,6 @@ def victime_details_ajax(request, victime_id):
             famille_data = {
                 'id': victime.famille.id,
                 'nom_famille': victime.famille.nom_famille,
-                'type_famille': victime.famille.get_type_famille_display(),
                 'adresse': victime.famille.adresse,
                 'telephone': victime.famille.telephone,
                 'situation_economique': victime.famille.get_situation_economique_display(),
@@ -459,39 +620,76 @@ def victime_details_ajax(request, victime_id):
 
 
 @role_required(['agent', 'responsable', 'admin'])
-def victime_modifier_ajax(request):
+def victime_modifier_ajax(request, victime_id):
     """Vue AJAX pour modifier une victime"""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
     
     try:
-        victime_id = request.POST.get('victime_id')
         victime = get_object_or_404(FicheVictime, id=victime_id)
         
         # Vérifier les permissions : agent ne peut modifier que ses propres victimes
         if request.user.role == 'agent' and victime.cree_par != request.user:
             return JsonResponse({'success': False, 'message': 'Vous n\'avez pas l\'autorisation de modifier cette victime.'})
         
-        # Mettre à jour les champs
-        victime.nom = request.POST.get('nom', victime.nom)
-        victime.prenom = request.POST.get('prenom', victime.prenom)
-        victime.grade = request.POST.get('grade', victime.grade)
-        victime.lieu_deces = request.POST.get('lieu_deces', victime.lieu_deces)
+        # Mettre à jour les champs d'identité
+        if 'nom_complet' in request.POST:
+            nom_complet = request.POST.get('nom_complet', '').strip()
+            if nom_complet:
+                # Diviser le nom complet en prénom et nom
+                parties = nom_complet.split(' ', 1)
+                if len(parties) >= 2:
+                    victime.prenom = parties[0]
+                    victime.nom = parties[1]
+                else:
+                    victime.nom = parties[0]
+                    
+        if 'sexe' in request.POST:
+            victime.sexe = request.POST.get('sexe', victime.sexe)
+            
+        # Traitement de la date de naissance
+        if 'date_naissance' in request.POST:
+            date_naissance = request.POST.get('date_naissance')
+            if date_naissance:
+                try:
+                    from datetime import datetime
+                    victime.date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+            
+        if 'etat_civil' in request.POST:
+            etat_civil = request.POST.get('etat_civil')
+            if etat_civil:
+                victime.statut_civil = etat_civil
+        
+        if 'grade' in request.POST:
+            victime.grade = request.POST.get('grade', victime.grade)
         
         # Traitement de la date de décès
-        date_deces = request.POST.get('date_deces')
-        if date_deces:
-            try:
-                from datetime import datetime
-                victime.date_deces = datetime.strptime(date_deces, '%Y-%m-%d').date()
-            except ValueError:
-                victime.date_deces = None
+        if 'date_deces' in request.POST:
+            date_deces = request.POST.get('date_deces')
+            if date_deces:
+                try:
+                    from datetime import datetime
+                    victime.date_deces = datetime.strptime(date_deces, '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+        
+        if 'lieu_deces' in request.POST:
+            victime.lieu_deces = request.POST.get('lieu_deces', victime.lieu_deces)
         
         # Traitement du fichier acte de décès
         if 'acte_deces' in request.FILES:
             victime.acte_deces = request.FILES['acte_deces']
         
         victime.save()
+        
+        # Journalisation
+        JournalAction.objects.create(
+            utilisateur=request.user,
+            action="Modification fiche victime via AJAX",
+            details=f"Fiche victime {victime.prenom} {victime.nom} modifiée (ID: {victime.id})"
+        )
         
         return JsonResponse({
             'success': True,

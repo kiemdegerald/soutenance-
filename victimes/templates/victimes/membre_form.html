@@ -1,0 +1,137 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter Membre - Gendarmerie{% endblock %}
+{% block breadcrumb %}Ajouter Membre à la Famille{% endblock %}
+
+{% block content %}
+<div class="chart-container">
+    <div class="chart-header">
+        <div>
+            <div class="chart-title">AJOUTER UN MEMBRE</div>
+            <div style="color: #6b7280; font-size: 0.9rem;">Famille {{ famille.id }} - {{ famille.ville }}</div>
+        </div>
+        <div>
+            <a href="{% url 'famille_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour aux familles
+            </a>
+        </div>
+    </div>
+    
+    <form method="post" class="row g-3">
+        {% csrf_token %}
+        
+        <div class="col-md-6">
+            <label for="{{ form.nom.id_for_label }}" class="form-label">
+                <i class="fas fa-user me-2"></i>Nom
+            </label>
+            {{ form.nom }}
+            {% if form.nom.errors %}
+                <div class="text-danger">{{ form.nom.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-6">
+            <label for="{{ form.prenom.id_for_label }}" class="form-label">
+                <i class="fas fa-user me-2"></i>Prénom
+            </label>
+            {{ form.prenom }}
+            {% if form.prenom.errors %}
+                <div class="text-danger">{{ form.prenom.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-6">
+            <label for="{{ form.date_naissance.id_for_label }}" class="form-label">
+                <i class="fas fa-birthday-cake me-2"></i>Date de naissance
+            </label>
+            {{ form.date_naissance }}
+            {% if form.date_naissance.errors %}
+                <div class="text-danger">{{ form.date_naissance.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-6">
+            <label for="{{ form.lien_parente.id_for_label }}" class="form-label">
+                <i class="fas fa-family me-2"></i>Lien de parenté
+            </label>
+            {{ form.lien_parente }}
+            {% if form.lien_parente.errors %}
+                <div class="text-danger">{{ form.lien_parente.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="col-12" style="margin-top: 30px;">
+            <div style="display: flex; gap: 15px;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Ajouter le membre
+                </button>
+                <a href="{% url 'famille_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-control {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-2px);
+}
+
+.text-danger {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
+</style>
+{% endblock %}

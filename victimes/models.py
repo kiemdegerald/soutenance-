@@ -14,13 +14,6 @@ class User(AbstractUser):
 
 
 class Famille(models.Model):
-    TYPE_FAMILLE_CHOICES = [
-        ('nucleaire', 'Nucléaire'),
-        ('elargie', 'Élargie'),
-        ('monoparentale', 'Monoparentale'),
-        ('recomposee', 'Recomposée'),
-    ]
-    
     SITUATION_ECONOMIQUE_CHOICES = [
         ('stable', 'Stable'),
         ('precaire', 'Précaire'),
@@ -29,7 +22,6 @@ class Famille(models.Model):
     ]
     
     nom_famille = models.CharField(max_length=100, verbose_name="Nom de famille")
-    type_famille = models.CharField(max_length=20, choices=TYPE_FAMILLE_CHOICES, default='nucleaire', verbose_name="Type de famille")
     adresse = models.TextField(blank=True, verbose_name="Adresse complète")
     ville = models.CharField(max_length=100, blank=True, verbose_name="Ville")
     telephone = models.CharField(max_length=20, blank=True, verbose_name="Téléphone")
@@ -136,14 +128,13 @@ class DemandeAide(models.Model):
         ("autre", "Autre"),
     ]
     STATUT_CHOICES = [
-        ("planifiee", "Planifiée"),
-        ("soumise", "Soumise"),
+        ("soumise", "En attente"),
         ("validee", "Validée"),
         ("refusee", "Refusée"),
     ]
     famille = models.ForeignKey(Famille, related_name="demandes", on_delete=models.CASCADE)
     type_demande = models.CharField(max_length=20, choices=TYPE_CHOICES)
-    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default="planifiee")
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default="soumise")
     description = models.TextField(blank=True)
     cree_par = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="demandes_creees")
     valide_par = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="demandes_validees")

@@ -1,0 +1,401 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block content %}
+{% csrf_token %}
+<div class="chart-container">
+    <div class="chart-header">
+        <div>
+            <div class="chart-title">SUIVI DES AIDES</div>
+            <div style="color: #6b7280; font-size: 0.9rem;">Gestion et suivi des demandes d'aide</div>
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <!-- Filtres de statut -->
+            <div class="btn-group" role="group">
+                <a href="{% url 'suivi_aides' %}" class="btn {% if not statut_filtre %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm">
+                    <i class="fas fa-list"></i> Toutes
+                </a>
+                <a href="{% url 'suivi_aides' %}?statut=soumise" class="btn {% if statut_filtre == 'soumise' %}btn-warning{% else %}btn-outline-warning{% endif %} btn-sm">
+                    <i class="fas fa-clock"></i> En attente
+                </a>
+                <a href="{% url 'suivi_aides' %}?statut=validee" class="btn {% if statut_filtre == 'validee' %}btn-success{% else %}btn-outline-success{% endif %} btn-sm">
+                    <i class="fas fa-check"></i> Validées
+                </a>
+                <a href="{% url 'suivi_aides' %}?statut=refusee" class="btn {% if statut_filtre == 'refusee' %}btn-danger{% else %}btn-outline-danger{% endif %} btn-sm">
+                    <i class="fas fa-times"></i> Refusées
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div style="margin-bottom: 30px;">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-number">{{ stats.total }}</div>
+                            <div class="stat-label">Total Demandes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #fbbf24, #d97706);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-number">{{ stats.en_attente }}</div>
+                            <div class="stat-label">En Attente</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-number">{{ stats.validees }}</div>
+                            <div class="stat-label">Validées</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div class="stat-details">
+                            <div class="stat-number">{{ stats.refusees }}</div>
+                            <div class="stat-label">Refusées</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des demandes -->
+    <div style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden;">
+        {% if demandes %}
+        <div style="max-height: 700px; overflow-y: auto;">
+            {% for demande in demandes %}
+            <div class="demande-item" style="display: flex; align-items: center; padding: 20px; border-bottom: 1px solid #f3f4f6; transition: all 0.3s ease; position: relative;">
+                <!-- Indicateur de statut -->
+                <div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px; position: relative;
+                    {% if demande.statut == 'validee' %}background: linear-gradient(135deg, #10b981, #059669);
+                    {% elif demande.statut == 'soumise' %}background: linear-gradient(135deg, #fbbf24, #d97706);
+                    {% elif demande.statut == 'refusee' %}background: linear-gradient(135deg, #ef4444, #dc2626);
+                    {% else %}background: linear-gradient(135deg, #64748b, #475569);{% endif %}">
+                    <i class="fas 
+                        {% if demande.statut == 'validee' %}fa-check
+                        {% elif demande.statut == 'soumise' %}fa-clock
+                        {% elif demande.statut == 'refusee' %}fa-times
+                        {% else %}fa-question{% endif %}" 
+                        style="color: white; font-size: 1.2rem;"></i>
+                </div>
+
+                <!-- Informations principales -->
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 10px;">
+                        <div>
+                            <h5 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 1.1rem;">
+                                {{ demande.get_type_demande_display }}
+                            </h5>
+                            <div style="display: flex; align-items: center; gap: 15px; margin-top: 5px;">
+                                <span style="font-size: 0.9rem; color: #6b7280;">
+                                    <i class="fas fa-users" style="margin-right: 5px; color: #3b82f6;"></i>
+                                    Famille {{ demande.famille.nom_famille }}
+                                </span>
+                                {% if demande.famille.ville %}
+                                <span style="font-size: 0.9rem; color: #6b7280;">
+                                    <i class="fas fa-map-marker-alt" style="margin-right: 5px; color: #ef4444;"></i>
+                                    {{ demande.famille.ville }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Badge de statut -->
+                        <div style="text-align: right;">
+                            <span class="badge" style="padding: 8px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+                                {% if demande.statut == 'validee' %}background: #10b98120; color: #10b981;
+                                {% elif demande.statut == 'soumise' %}background: #fbbf2420; color: #d97706;
+                                {% elif demande.statut == 'refusee' %}background: #ef444420; color: #ef4444;
+                                {% else %}background: #64748b20; color: #64748b;{% endif %}">
+                                {{ demande.get_statut_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Description si présente -->
+                    {% if demande.description %}
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #3b82f6;">
+                        <p style="margin: 0; color: #4b5563; font-size: 0.9rem; line-height: 1.5;">
+                            <i class="fas fa-quote-left" style="color: #3b82f6; margin-right: 8px; font-size: 0.8rem;"></i>
+                            {{ demande.description|truncatechars:120 }}
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Informations temporelles et utilisateurs -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-calendar-plus" style="color: #3b82f6; margin-right: 8px;"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; font-weight: 600;">Créée le</div>
+                                <div style="font-size: 0.9rem; color: #374151; font-weight: 500;">{{ demande.date_creation|date:"d/m/Y à H:i" }}</div>
+                            </div>
+                        </div>
+
+                        {% if demande.statut == 'validee' and demande.valide_par %}
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-user-check" style="color: #10b981; margin-right: 8px;"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; font-weight: 600;">Validée par</div>
+                                <div style="font-size: 0.9rem; color: #374151; font-weight: 500;">
+                                    {{ demande.valide_par.first_name }} {{ demande.valide_par.last_name }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if demande.date_validation %}
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-calendar-check" style="color: #10b981; margin-right: 8px;"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; font-weight: 600;">Validée le</div>
+                                <div style="font-size: 0.9rem; color: #374151; font-weight: 500;">{{ demande.date_validation|date:"d/m/Y à H:i" }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Actions pour responsables/admins -->
+                    {% if user.role == 'responsable' or user.role == 'admin' %}
+                    {% if demande.statut == 'soumise' %}
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="validerDemande({{ demande.id }})" class="btn btn-success btn-sm">
+                                <i class="fas fa-check me-1"></i>Valider
+                            </button>
+                            <button onclick="refuserDemande({{ demande.id }})" class="btn btn-danger btn-sm">
+                                <i class="fas fa-times me-1"></i>Refuser
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px; color: #6b7280;">
+            <i class="fas fa-hands-helping" style="font-size: 4rem; margin-bottom: 20px; color: #d1d5db;"></i>
+            <h3 style="color: #374151; margin-bottom: 10px;">
+                {% if statut_filtre %}
+                    Aucune demande {{ statut_filtre|capfirst }} trouvée
+                {% else %}
+                    Aucune demande d'aide enregistrée
+                {% endif %}
+            </h3>
+            <p style="font-size: 1.1rem;">
+                {% if statut_filtre %}
+                    Essayez de modifier le filtre de statut pour voir d'autres demandes.
+                {% else %}
+                    Les demandes d'aide apparaîtront ici une fois créées.
+                {% endif %}
+            </p>
+            {% if not statut_filtre %}
+            <a href="{% url 'demande_list' %}" class="btn btn-primary" style="margin-top: 20px;">
+                <i class="fas fa-plus me-2"></i>Créer une demande
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- CSS personnalisé -->
+<style>
+.demande-item:hover {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.stat-content {
+    display: flex;
+    align-items: center;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.stat-details {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.btn-group .btn {
+    border-radius: 8px !important;
+    margin-right: 5px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+</style>
+
+<!-- JavaScript pour les actions -->
+<script>
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+function validerDemande(demandeId) {
+    if (confirm('Êtes-vous sûr de vouloir valider cette demande ?')) {
+        fetch(`/demandes/${demandeId}/valider/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Demande validée avec succès !', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert(data.message || 'Erreur lors de la validation', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showAlert('Erreur de connexion', 'error');
+        });
+    }
+}
+
+function refuserDemande(demandeId) {
+    if (confirm('Êtes-vous sûr de vouloir refuser cette demande ?')) {
+        fetch(`/demandes/${demandeId}/refuser/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Demande refusée avec succès !', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert(data.message || 'Erreur lors du refus', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showAlert('Erreur de connexion', 'error');
+        });
+    }
+}
+
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    
+    if (type === 'success') {
+        alertDiv.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    } else if (type === 'error') {
+        alertDiv.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    } else {
+        alertDiv.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+    }
+    
+    alertDiv.textContent = message;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => alertDiv.remove(), 300);
+    }, 3000);
+}
+
+// CSS animations
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
+}
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}
