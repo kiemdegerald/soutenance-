@@ -1,0 +1,118 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Rapport Familles Aidées - Gendarmerie{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <!-- En-tête -->
+    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);">
+        <div style="display: flex; align-items: center; justify-content: between;">
+            <div>
+                <h1 style="margin: 0; font-size: 2.2rem; font-weight: 700;">Rapport des Familles Aidées</h1>
+                <p style="margin: 10px 0 0 0; font-size: 1.1rem; opacity: 0.9;">Statistiques d'aide aux familles</p>
+                <p style="margin: 5px 0 0 0; font-size: 0.95rem; opacity: 0.8;">{{ "now"|date:"l d F Y" }}</p>
+            </div>
+            <div style="text-align: right;">
+                <i class="fas fa-chart-bar" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="chart-container">
+        <div class="chart-header">
+            <div>
+                <div class="chart-title">STATISTIQUES GÉNÉRALES</div>
+                <div style="color: #6b7280; font-size: 0.9rem;">Vue d'ensemble de l'aide apportée</div>
+            </div>
+        </div>
+        
+        <div style="padding: 30px;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 40px; border-radius: 15px; text-align: center; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);">
+                        <i class="fas fa-hands-helping" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.8;"></i>
+                        <div style="font-size: 3rem; font-weight: 700; margin-bottom: 10px;">{{ nb_familles }}</div>
+                        <div style="font-size: 1.2rem; opacity: 0.9;">Famille{{ nb_familles|pluralize }} aidée{{ nb_familles|pluralize }}</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 10px;">Demandes validées et traitées</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <h4 style="color: #374151; margin-bottom: 20px; font-weight: 600;">Détails du Rapport</h4>
+                        
+                        <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 15px; background: #f8fafc; border-radius: 10px;">
+                            <div style="width: 40px; height: 40px; background: #3b82f620; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                <i class="fas fa-calendar" style="color: #3b82f6;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #1f2937;">Date du rapport</div>
+                                <div style="font-size: 0.9rem; color: #6b7280;">{{ "now"|date:"l d F Y à H:i" }}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 15px; background: #f0fdf4; border-radius: 10px;">
+                            <div style="width: 40px; height: 40px; background: #10b98120; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #1f2937;">Status</div>
+                                <div style="font-size: 0.9rem; color: #059669;">Demandes validées uniquement</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; padding: 15px; background: #fffbeb; border-radius: 10px;">
+                            <div style="width: 40px; height: 40px; background: #f59e0b20; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                <i class="fas fa-info-circle" style="color: #f59e0b;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #1f2937;">Note</div>
+                                <div style="font-size: 0.9rem; color: #d97706;">Familles distinctes avec au moins une aide validée</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary" style="padding: 12px 30px; border-radius: 10px; font-weight: 600;">
+            <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+        </a>
+        <a href="{% url 'suivi_aides' %}" class="btn btn-info" style="padding: 12px 30px; border-radius: 10px; font-weight: 600; margin-left: 15px;">
+            <i class="fas fa-chart-line me-2"></i>Suivi des Aides
+        </a>
+    </div>
+</div>
+
+<!-- CSS personnalisé -->
+<style>
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    padding: 25px;
+    border-bottom: 1px solid #f3f4f6;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+.chart-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+</style>
+{% endblock %}

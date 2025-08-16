@@ -1,0 +1,352 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Utilisateurs - Gendarmerie{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <!-- En-tête -->
+    <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);">
+        <div style="display: flex; align-items: center; justify-content: between;">
+            <div>
+                <h1 style="margin: 0; font-size: 2rem; font-weight: 700;">
+                    <i class="fas fa-users" style="margin-right: 15px;"></i>
+                    Gestion des Utilisateurs
+                </h1>
+                <p style="margin: 10px 0 0 0; font-size: 1rem; opacity: 0.9;">Administration et supervision des comptes utilisateurs</p>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.9rem; opacity: 0.8;">
+                    {{ users.count }} utilisateur{{ users.count|pluralize }} au total
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ users_actifs }}</div>
+                        <div class="stat-label">Utilisateurs Actifs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ users_inactifs }}</div>
+                        <div class="stat-label">Utilisateurs Inactifs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ derniere_connexion_count }}</div>
+                        <div class="stat-label">Connectés Aujourd'hui</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ nouveaux_utilisateurs }}</div>
+                        <div class="stat-label">Nouveaux Cette Semaine</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px;">
+        <form method="GET" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: end;">
+            <div style="flex: 1; min-width: 250px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #374151;">Rechercher un utilisateur</label>
+                <input type="text" name="search" value="{{ request.GET.search }}" 
+                       placeholder="Nom, prénom, email..." 
+                       style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+            </div>
+            <div style="min-width: 150px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #374151;">Rôle</label>
+                <select name="role" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                    <option value="">Tous les rôles</option>
+                    <option value="agent" {% if request.GET.role == 'agent' %}selected{% endif %}>Agent</option>
+                    <option value="assistant" {% if request.GET.role == 'assistant' %}selected{% endif %}>Assistant Social</option>
+                    <option value="responsable" {% if request.GET.role == 'responsable' %}selected{% endif %}>Responsable</option>
+                    <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>Administrateur</option>
+                </select>
+            </div>
+            <div style="min-width: 150px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #374151;">Statut</label>
+                <select name="status" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                    <option value="">Tous les statuts</option>
+                    <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Actif</option>
+                    <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactif</option>
+                </select>
+            </div>
+            <button type="submit" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 11px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-search" style="margin-right: 8px;"></i>Filtrer
+            </button>
+            <a href="{% url 'gestion_utilisateurs' %}" style="background: #6b7280; color: white; padding: 11px 15px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                <i class="fas fa-times" style="margin-right: 8px;"></i>Reset
+            </a>
+        </form>
+    </div>
+
+    <!-- Liste des utilisateurs -->
+    <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 20px; border-bottom: 1px solid #e5e7eb;">
+            <h2 style="margin: 0; font-size: 1.3rem; font-weight: 700; color: #1f2937;">
+                Liste des Utilisateurs
+                <span style="font-size: 0.9rem; font-weight: 500; color: #6b7280; margin-left: 10px;">
+                    ({{ users.count }} résultat{{ users.count|pluralize }})
+                </span>
+            </h2>
+        </div>
+
+        {% if users %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #f9fafb;">
+                    <tr>
+                        <th style="padding: 15px; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">
+                            Utilisateur
+                        </th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">
+                            Rôle
+                        </th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">
+                            Statut
+                        </th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">
+                            Dernière Connexion
+                        </th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">
+                            Actions
+                        </th>
+                        <th style="padding: 15px; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">
+                            Statut
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr style="border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s ease;" 
+                        onmouseover="this.style.backgroundColor='#f9fafb';" 
+                        onmouseout="this.style.backgroundColor='white';">
+                        <td style="padding: 15px;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;
+                                    {% if user.role == 'admin' %}background: linear-gradient(135deg, #ef4444, #dc2626);
+                                    {% elif user.role == 'responsable' %}background: linear-gradient(135deg, #10b981, #059669);
+                                    {% elif user.role == 'assistant' %}background: linear-gradient(135deg, #f59e0b, #d97706);
+                                    {% else %}background: linear-gradient(135deg, #3b82f6, #1d4ed8);{% endif %} color: white;">
+                                    <i class="fas 
+                                        {% if user.role == 'admin' %}fa-user-shield
+                                        {% elif user.role == 'responsable' %}fa-user-cog
+                                        {% elif user.role == 'assistant' %}fa-hands-helping
+                                        {% else %}fa-user{% endif %}" style="font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #1f2937; font-size: 0.95rem;">
+                                        {{ user.first_name }} {{ user.last_name }}
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #6b7280;">
+                                        {{ user.email }}
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: #9ca3af;">
+                                        Inscrit le {{ user.date_joined|date:"d/m/Y" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 15px;">
+                            <span style="padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+                                {% if user.role == 'admin' %}background: #ef444420; color: #ef4444;
+                                {% elif user.role == 'responsable' %}background: #10b98120; color: #10b981;
+                                {% elif user.role == 'assistant' %}background: #f59e0b20; color: #f59e0b;
+                                {% else %}background: #3b82f620; color: #3b82f6;{% endif %}">
+                                {{ user.get_role_display }}
+                            </span>
+                        </td>
+                        <td style="padding: 15px;">
+                            {% if user.is_active %}
+                                <span style="display: flex; align-items: center; color: #10b981; font-weight: 600; font-size: 0.9rem;">
+                                    <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 8px;"></i>
+                                    Actif
+                                </span>
+                            {% else %}
+                                <span style="display: flex; align-items: center; color: #ef4444; font-weight: 600; font-size: 0.9rem;">
+                                    <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 8px;"></i>
+                                    Inactif
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            {% if user.last_login %}
+                                <div style="font-size: 0.9rem; color: #374151;">
+                                    {{ user.last_login|date:"d/m/Y" }}
+                                </div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">
+                                    {{ user.last_login|date:"H:i" }}
+                                </div>
+                            {% else %}
+                                <span style="color: #9ca3af; font-style: italic; font-size: 0.9rem;">
+                                    Jamais connecté
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 15px;">
+                            <div style="font-size: 0.85rem; color: #6b7280;">
+                                {% if user.nb_actions %}
+                                    {{ user.nb_actions }} action{{ user.nb_actions|pluralize }}
+                                {% else %}
+                                    Aucune action
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            {% if user != request.user %}
+                                <button onclick="toggleUserStatus({{ user.id }}, '{{ user.is_active|yesno:"false,true" }}')"
+                                        style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.3s ease;
+                                            {% if user.is_active %}
+                                                background: linear-gradient(135deg, #ef4444, #dc2626); color: white;
+                                            {% else %}
+                                                background: linear-gradient(135deg, #10b981, #059669); color: white;
+                                            {% endif %}"
+                                        onmouseover="this.style.transform='scale(1.05)';"
+                                        onmouseout="this.style.transform='scale(1)';">
+                                    {% if user.is_active %}
+                                        <i class="fas fa-user-times" style="margin-right: 6px;"></i>Désactiver
+                                    {% else %}
+                                        <i class="fas fa-user-check" style="margin-right: 6px;"></i>Activer
+                                    {% endif %}
+                                </button>
+                            {% else %}
+                                <span style="color: #9ca3af; font-style: italic; font-size: 0.85rem;">
+                                    (Vous-même)
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px; color: #6b7280;">
+            <i class="fas fa-users" style="font-size: 4rem; margin-bottom: 20px; color: #d1d5db;"></i>
+            <h3 style="color: #374151; margin-bottom: 10px;">Aucun utilisateur trouvé</h3>
+            <p style="font-size: 0.95rem;">Aucun utilisateur ne correspond à vos critères de recherche</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- CSS personnalisé -->
+<style>
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.stat-content {
+    display: flex;
+    align-items: center;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    color: white;
+    font-size: 1.3rem;
+}
+
+.stat-details {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-top: 3px;
+}
+</style>
+
+<!-- JavaScript pour la gestion des utilisateurs -->
+<script>
+function toggleUserStatus(userId, newStatus) {
+    if (confirm('Êtes-vous sûr de vouloir modifier le statut de cet utilisateur ?')) {
+        fetch(`{% url 'toggle_user_status' 0 %}`.replace('0', userId), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'is_active': newStatus === 'true'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de la modification du statut');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur de connexion');
+        });
+    }
+}
+</script>
+
+<!-- Token CSRF pour les requêtes AJAX -->
+{% csrf_token %}
+{% endblock %}

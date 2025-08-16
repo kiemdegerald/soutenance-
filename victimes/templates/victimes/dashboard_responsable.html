@@ -1,0 +1,445 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Responsable - Gendarmerie{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <!-- En-tête avec salutation -->
+    <div style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);">
+        <div style="display: flex; align-items: center; justify-content: between;">
+            <div>
+                <h1 style="margin: 0; font-size: 2.2rem; font-weight: 700;">Bonjour, {{ user.first_name }} {{ user.last_name }}</h1>
+                <p style="margin: 10px 0 0 0; font-size: 1.1rem; opacity: 0.9;">Responsable - Tableau de bord de gestion</p>
+                <p style="margin: 5px 0 0 0; font-size: 0.95rem; opacity: 0.8;">{{ "now"|date:"l d F Y" }}</p>
+            </div>
+            <div style="text-align: right;">
+                <i class="fas fa-user-tie" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerte pour demandes en attente -->
+    {% if demandes_en_attente > 0 %}
+    <div style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; display: flex; align-items: center;">
+        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-right: 15px;"></i>
+        <div>
+            <h4 style="margin: 0; font-weight: 600;">{{ demandes_en_attente }} demande{{ demandes_en_attente|pluralize }} en attente de validation</h4>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">Des familles attendent votre décision pour leurs demandes d'aide</p>
+        </div>
+        <div style="margin-left: auto;">
+            <a href="{% url 'suivi_aides' %}?statut=soumise" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                <i class="fas fa-gavel me-2"></i>Traiter les demandes
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ total_demandes }}</div>
+                        <div class="stat-label">Total Demandes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ demandes_en_attente }}</div>
+                        <div class="stat-label">En Attente</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ demandes_validees }}</div>
+                        <div class="stat-label">Validées</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ demandes_refusees }}</div>
+                        <div class="stat-label">Refusées</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue d'ensemble et Demandes à traiter -->
+    <div class="row">
+        <!-- Vue d'ensemble -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">VUE D'ENSEMBLE</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Statistiques globales du système</div>
+                    </div>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <!-- Taux de traitement -->
+                    <div style="background: linear-gradient(135deg, #f0f9ff, #dbeafe); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+                        <div style="display: flex; align-items: center; justify-content: between;">
+                            <div>
+                                <div style="font-size: 0.8rem; color: #1e40af; font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Taux de Traitement</div>
+                                <div style="font-size: 2rem; font-weight: 700; color: #3b82f6;">{{ taux_traitement }}%</div>
+                                <div style="font-size: 0.85rem; color: #1e40af;">des demandes ont été traitées</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <i class="fas fa-chart-pie" style="font-size: 2.5rem; color: #3b82f650;"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistiques système -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <h4 style="margin: 0 0 15px 0; color: #374151; font-weight: 600;">Statistiques du Système</h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div style="text-align: center; padding: 15px; background: #f8fafc; border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #6366f1;">{{ total_victimes_resp }}</div>
+                                <div style="font-size: 0.8rem; color: #6b7280; font-weight: 500;">Victimes Enregistrées</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: #f8fafc; border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #8b5cf6;">{{ total_familles }}</div>
+                                <div style="font-size: 0.8rem; color: #6b7280; font-weight: 500;">Familles Enregistrées</div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div style="text-align: center; padding: 15px; background: #f0fdf4; border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">{{ victimes_avec_famille }}</div>
+                                <div style="font-size: 0.8rem; color: #6b7280; font-weight: 500;">Victimes avec Famille</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: #fffbeb; border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">{{ familles_avec_demandes }}</div>
+                                <div style="font-size: 0.8rem; color: #6b7280; font-weight: 500;">Familles avec Demandes</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demandes à traiter -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">DEMANDES À TRAITER</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Demandes en attente de validation</div>
+                    </div>
+                    <div>
+                        <a href="{% url 'suivi_aides' %}?statut=soumise" class="btn btn-sm btn-warning">
+                            <i class="fas fa-list"></i> Voir toutes
+                        </a>
+                    </div>
+                </div>
+                
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% if demandes_a_traiter %}
+                        {% for demande in demandes_a_traiter %}
+                        <div style="display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f3f4f6;">
+                            <div style="width: 40px; height: 40px; background: #fbbf2420; color: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; color: #1f2937; font-size: 0.95rem;">{{ demande.get_type_demande_display }}</div>
+                                <div style="font-size: 0.8rem; color: #6b7280; margin: 2px 0;">
+                                    Famille {{ demande.famille.nom_famille }}
+                                    {% if demande.famille.ville %} - {{ demande.famille.ville }}{% endif %}
+                                </div>
+                                <div style="font-size: 0.75rem; color: #9ca3af;">
+                                    Créée le {{ demande.date_creation|date:"d/m/Y à H:i" }}
+                                    {% if demande.cree_par %} par {{ demande.cree_par.first_name }} {{ demande.cree_par.last_name }}{% endif %}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="validerDemande({{ demande.id }})" class="btn btn-success btn-sm" style="padding: 5px 10px;">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button onclick="refuserDemande({{ demande.id }})" class="btn btn-danger btn-sm" style="padding: 5px 10px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div style="text-align: center; padding: 40px; color: #6b7280;">
+                        <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 15px; color: #10b981;"></i>
+                        <h4 style="color: #374151; margin-bottom: 10px;">Aucune demande en attente</h4>
+                        <p style="font-size: 0.95rem;">Toutes les demandes ont été traitées !</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div style="margin-top: 30px;">
+        <div class="chart-container">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">ACTIONS RAPIDES</div>
+                    <div style="color: #6b7280; font-size: 0.9rem;">Accès direct aux fonctionnalités de gestion</div>
+                </div>
+            </div>
+            
+            <div style="padding: 20px;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{% url 'suivi_aides' %}" style="display: block; text-decoration: none;">
+                            <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: all 0.3s ease;" 
+                                 onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(59, 130, 246, 0.3)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <i class="fas fa-chart-line" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                                <h4 style="margin: 0; font-weight: 600;">Suivi des Aides</h4>
+                                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Gérer toutes les demandes</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'victime_list' %}" style="display: block; text-decoration: none;">
+                            <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: all 0.3s ease;"
+                                 onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(16, 185, 129, 0.3)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <i class="fas fa-users" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                                <h4 style="margin: 0; font-weight: 600;">Fiches Victimes</h4>
+                                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Consulter tous les dossiers</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'famille_list' %}" style="display: block; text-decoration: none;">
+                            <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: all 0.3s ease;"
+                                 onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(139, 92, 246, 0.3)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <i class="fas fa-home" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                                <h4 style="margin: 0; font-weight: 600;">Familles</h4>
+                                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Gérer les familles</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'rapport_familles_aidees' %}" style="display: block; text-decoration: none;">
+                            <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: all 0.3s ease;"
+                                 onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(245, 158, 11, 0.3)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <i class="fas fa-file-chart-line" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                                <h4 style="margin: 0; font-weight: 600;">Rapports</h4>
+                                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Statistiques et rapports</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS personnalisé -->
+<style>
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.stat-content {
+    display: flex;
+    align-items: center;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.stat-details {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    padding: 25px;
+    border-bottom: 1px solid #f3f4f6;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+.chart-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+</style>
+
+<!-- JavaScript pour les actions -->
+<script>
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+function validerDemande(demandeId) {
+    if (confirm('Êtes-vous sûr de vouloir valider cette demande ?')) {
+        fetch(`/demandes/${demandeId}/valider/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Demande validée avec succès !', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert(data.message || 'Erreur lors de la validation', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showAlert('Erreur de connexion', 'error');
+        });
+    }
+}
+
+function refuserDemande(demandeId) {
+    if (confirm('Êtes-vous sûr de vouloir refuser cette demande ?')) {
+        fetch(`/demandes/${demandeId}/refuser/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Demande refusée avec succès !', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert(data.message || 'Erreur lors du refus', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showAlert('Erreur de connexion', 'error');
+        });
+    }
+}
+
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    
+    if (type === 'success') {
+        alertDiv.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    } else if (type === 'error') {
+        alertDiv.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    } else {
+        alertDiv.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+    }
+    
+    alertDiv.textContent = message;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => alertDiv.remove(), 300);
+    }, 3000);
+}
+
+// CSS animations
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
+}
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

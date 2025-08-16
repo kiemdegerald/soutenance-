@@ -1,0 +1,414 @@
+{% extends 'victimes/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Administrateur - Gendarmerie{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <!-- En-tête avec salutation -->
+    <div style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);">
+        <div style="display: flex; align-items: center; justify-content: between;">
+            <div>
+                <h1 style="margin: 0; font-size: 2.2rem; font-weight: 700;">Bonjour, {{ user.first_name }} {{ user.last_name }}</h1>
+                <p style="margin: 10px 0 0 0; font-size: 1.1rem; opacity: 0.9;">Administrateur - Tableau de bord</p>
+                <p style="margin: 5px 0 0 0; font-size: 0.95rem; opacity: 0.8;">{{ "now"|date:"l d F Y" }}</p>
+            </div>
+            <div style="text-align: right;">
+                <i class="fas fa-user-shield" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ total_utilisateurs }}</div>
+                        <div class="stat-label">Utilisateurs Total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ utilisateurs_actifs }}</div>
+                        <div class="stat-label">Utilisateurs Actifs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ actions_aujourd_hui }}</div>
+                        <div class="stat-label">Actions Aujourd'hui</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ actions_cette_semaine }}</div>
+                        <div class="stat-label">Actions Cette Semaine</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques globales du système -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ total_victimes }}</div>
+                        <div class="stat-label">Total Victimes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);">
+                        <i class="fas fa-hands-helping"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ total_demandes }}</div>
+                        <div class="stat-label">Total Demandes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #14b8a6, #0d9488);">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <div class="stat-details">
+                        <div class="stat-number">{{ affaires_resolues }}</div>
+                        <div class="stat-label">Affaires Résolues</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Répartition des utilisateurs par rôle -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">RÉPARTITION DES UTILISATEURS</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Par rôle dans le système</div>
+                    </div>
+                    <div>
+                        <a href="{% url 'gestion_utilisateurs' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-cog"></i> Gérer
+                        </a>
+                    </div>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <div style="display: grid; gap: 15px;">
+                        <div style="display: flex; align-items: center; justify-content: between; padding: 15px; background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-radius: 10px; border-left: 4px solid #3b82f6;">
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-user-tie" style="color: #3b82f6; margin-right: 12px; font-size: 1.2rem;"></i>
+                                <span style="font-weight: 600; color: #1e40af;">Agents</span>
+                            </div>
+                            <span style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">{{ repartition_roles.agents }}</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; justify-content: between; padding: 15px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 10px; border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-hands-helping" style="color: #f59e0b; margin-right: 12px; font-size: 1.2rem;"></i>
+                                <span style="font-weight: 600; color: #d97706;">Assistants Sociaux</span>
+                            </div>
+                            <span style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">{{ repartition_roles.assistants }}</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; justify-content: between; padding: 15px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 10px; border-left: 4px solid #10b981;">
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-user-cog" style="color: #10b981; margin-right: 12px; font-size: 1.2rem;"></i>
+                                <span style="font-weight: 600; color: #059669;">Responsables</span>
+                            </div>
+                            <span style="font-size: 1.5rem; font-weight: 700; color: #10b981;">{{ repartition_roles.responsables }}</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; justify-content: between; padding: 15px; background: linear-gradient(135deg, #fee2e2, #fca5a5); border-radius: 10px; border-left: 4px solid #ef4444;">
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-user-shield" style="color: #ef4444; margin-right: 12px; font-size: 1.2rem;"></i>
+                                <span style="font-weight: 600; color: #dc2626;">Administrateurs</span>
+                            </div>
+                            <span style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">{{ repartition_roles.admins }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activité récente du système -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">ACTIVITÉ SYSTÈME</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">Dernières actions des utilisateurs</div>
+                    </div>
+                    <div>
+                        <a href="{% url 'journal_actions' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> Journal complet
+                        </a>
+                    </div>
+                </div>
+                
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% if activites_systeme %}
+                        {% for action in activites_systeme %}
+                        <div style="display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f3f4f6;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;
+                                {% if action.utilisateur.role == 'admin' %}background: #ef444420; color: #ef4444;
+                                {% elif action.utilisateur.role == 'responsable' %}background: #10b98120; color: #10b981;
+                                {% elif action.utilisateur.role == 'assistant' %}background: #f59e0b20; color: #f59e0b;
+                                {% else %}background: #3b82f620; color: #3b82f6;{% endif %}">
+                                <i class="fas 
+                                    {% if action.utilisateur.role == 'admin' %}fa-user-shield
+                                    {% elif action.utilisateur.role == 'responsable' %}fa-user-cog
+                                    {% elif action.utilisateur.role == 'assistant' %}fa-hands-helping
+                                    {% else %}fa-user{% endif %}"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; color: #1f2937; font-size: 0.95rem;">{{ action.action }}</div>
+                                <div style="font-size: 0.8rem; color: #6b7280; margin: 2px 0;">
+                                    Par {{ action.utilisateur.first_name }} {{ action.utilisateur.last_name }}
+                                    <span style="color: #9ca3af;">({{ action.utilisateur.get_role_display }})</span>
+                                </div>
+                                {% if action.details %}
+                                <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 3px;">{{ action.details|truncatechars:60 }}</div>
+                                {% endif %}
+                                <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 3px;">
+                                    {{ action.date_action|date:"d/m/Y à H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div style="text-align: center; padding: 40px; color: #6b7280;">
+                        <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 15px; color: #d1d5db;"></i>
+                        <h4 style="color: #374151; margin-bottom: 10px;">Aucune activité récente</h4>
+                        <p style="font-size: 0.95rem;">Les actions des utilisateurs apparaîtront ici</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Utilisateurs les plus actifs -->
+    {% if utilisateurs_actifs_stats %}
+    <div style="margin-top: 30px;">
+        <div class="chart-container">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">UTILISATEURS LES PLUS ACTIFS</div>
+                    <div style="color: #6b7280; font-size: 0.9rem;">Classement par nombre d'actions</div>
+                </div>
+            </div>
+            
+            <div style="padding: 20px;">
+                <div class="row">
+                    {% for utilisateur in utilisateurs_actifs_stats %}
+                    <div class="col-md-{{ forloop.counter|add:1 }}">
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; border: 2px solid 
+                            {% if forloop.counter == 1 %}#fbbf24
+                            {% elif forloop.counter == 2 %}#94a3b8
+                            {% elif forloop.counter == 3 %}#cd7c2f
+                            {% else %}#e5e7eb{% endif %};">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;
+                                {% if utilisateur.role == 'admin' %}background: linear-gradient(135deg, #ef4444, #dc2626);
+                                {% elif utilisateur.role == 'responsable' %}background: linear-gradient(135deg, #10b981, #059669);
+                                {% elif utilisateur.role == 'assistant' %}background: linear-gradient(135deg, #f59e0b, #d97706);
+                                {% else %}background: linear-gradient(135deg, #3b82f6, #1d4ed8);{% endif %} color: white;">
+                                <i class="fas 
+                                    {% if utilisateur.role == 'admin' %}fa-user-shield
+                                    {% elif utilisateur.role == 'responsable' %}fa-user-cog
+                                    {% elif utilisateur.role == 'assistant' %}fa-hands-helping
+                                    {% else %}fa-user{% endif %}" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h5 style="margin: 0 0 5px 0; color: #1f2937;">{{ utilisateur.first_name }} {{ utilisateur.last_name }}</h5>
+                            <div style="font-size: 0.8rem; color: #6b7280; margin-bottom: 10px;">{{ utilisateur.get_role_display }}</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">{{ utilisateur.nb_actions }}</div>
+                            <div style="font-size: 0.8rem; color: #6b7280;">actions</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Actions rapides administrateur -->
+    <div style="margin-top: 30px;">
+        <div class="chart-container">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">ACTIONS ADMINISTRATEUR</div>
+                    <div style="color: #6b7280; font-size: 0.9rem;">Gestion et supervision du système</div>
+                </div>
+            </div>
+            
+            <div style="padding: 20px;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{% url 'gestion_utilisateurs' %}" style="display: block; text-decoration: none;">
+                            <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: all 0.3s ease;" 
+                                 onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(59, 130, 246, 0.3)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <i class="fas fa-users" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                                <h4 style="margin: 0; font-weight: 600;">Gestion Utilisateurs</h4>
+                                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Gérer les comptes et permissions</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'journal_actions' %}" style="display: block; text-decoration: none;">
+                            <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: all 0.3s ease;"
+                                 onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(16, 185, 129, 0.3)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <i class="fas fa-history" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                                <h4 style="margin: 0; font-weight: 600;">Journal d'Actions</h4>
+                                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Consulter l'historique complet</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'suivi_aides' %}" style="display: block; text-decoration: none;">
+                            <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: all 0.3s ease;"
+                                 onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(245, 158, 11, 0.3)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <i class="fas fa-chart-line" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                                <h4 style="margin: 0; font-weight: 600;">Suivi des Aides</h4>
+                                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Superviser les demandes</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'victime_list' %}" style="display: block; text-decoration: none;">
+                            <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 25px; border-radius: 12px; text-align: center; transition: all 0.3s ease;"
+                                 onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(139, 92, 246, 0.3)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <i class="fas fa-file-alt" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                                <h4 style="margin: 0; font-weight: 600;">Toutes les Données</h4>
+                                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Accès complet au système</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS personnalisé -->
+<style>
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.stat-content {
+    display: flex;
+    align-items: center;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.stat-details {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    padding: 25px;
+    border-bottom: 1px solid #f3f4f6;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+.chart-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+</style>
+{% endblock %}

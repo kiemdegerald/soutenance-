@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
+from django.db import models
+from django.db.models import Q
 from .decorators import role_required
 from .models import Famille, MembreFamille, FicheVictime, DemandeAide, JournalAction, User
 from .forms import FamilleForm, MembreFamilleForm, FicheVictimeForm, DemandeAideForm
@@ -297,6 +299,115 @@ def suivi_aides(request):
     
     return render(request, 'victimes/suivi_aides.html', context)
 
+# Vues administrateur
+@role_required(['admin'])
+def gestion_utilisateurs(request):
+    """Vue pour la gestion des utilisateurs par l'admin"""
+    users = User.objects.all().order_by('-date_joined')
+    
+    # Filtrage par recherche
+    search = request.GET.get('search')
+    if search:
+        users = users.filter(
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search) |
+            Q(email__icontains=search) |
+            Q(username__icontains=search)
+        )
+    
+    # Filtrage par rôle
+    role = request.GET.get('role')
+    if role:
+        users = users.filter(role=role)
+    
+    # Filtrage par statut
+    status = request.GET.get('status')
+    if status == 'active':
+        users = users.filter(is_active=True)
+    elif status == 'inactive':
+        users = users.filter(is_active=False)
+    
+    # Statistiques
+    users_actifs = User.objects.filter(is_active=True).count()
+    users_inactifs = User.objects.filter(is_active=False).count()
+    
+    # Statistiques par rôle
+    stats_roles = {
+        'agent': User.objects.filter(role='agent').count(),
+        'assistant': User.objects.filter(role='assistant').count(),
+        'responsable': User.objects.filter(role='responsable').count(),
+        'admin': User.objects.filter(role='admin').count(),
+    }
+    
+    context = {
+        'users': users,
+        'users_actifs': users_actifs,
+        'users_inactifs': users_inactifs,
+        'stats_roles': stats_roles,
+    }
+    
+    return render(request, 'victimes/gestion_utilisateurs.html', context)
+
+@role_required(['admin'])
+def journal_actions(request):
+    """Vue pour consulter le journal des actions"""
+    # Filtrage par utilisateur si demandé
+    utilisateur_filtre = request.GET.get('utilisateur')
+    if utilisateur_filtre:
+        actions = JournalAction.objects.filter(utilisateur_id=utilisateur_filtre)
+    else:
+        actions = JournalAction.objects.all()
+    
+    # Filtrage par date si demandé
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    if date_debut:
+        actions = actions.filter(date_action__date__gte=date_debut)
+    if date_fin:
+        actions = actions.filter(date_action__date__lte=date_fin)
+    
+    actions = actions.select_related('utilisateur').order_by('-date_action')[:100]  # Limiter à 100 résultats
+    
+    # Liste des utilisateurs pour le filtre
+    utilisateurs = User.objects.all().order_by('first_name', 'last_name')
+    
+    context = {
+        'actions': actions,
+        'utilisateurs': utilisateurs,
+        'utilisateur_filtre': utilisateur_filtre,
+        'date_debut': date_debut,
+        'date_fin': date_fin,
+    }
+    
+    return render(request, 'victimes/journal_actions.html', context)
+
+@role_required(['admin'])
+def toggle_user_status(request, user_id):
+    """Activer/Désactiver un utilisateur"""
+    if request.method == 'POST':
+        user = get_object_or_404(User, id=user_id)
+        user.is_active = not user.is_active
+        user.save()
+        
+        # Journalisation
+        action = "Activation" if user.is_active else "Désactivation"
+        JournalAction.objects.create(
+            utilisateur=request.user,
+            action=f"{action} utilisateur",
+            details=f"{action} de l'utilisateur {user.username} ({user.get_full_name()})"
+        )
+        
+        if request.headers.get('Content-Type') == 'application/json':
+            return JsonResponse({
+                'success': True, 
+                'message': f'Utilisateur {"activé" if user.is_active else "désactivé"} avec succès.',
+                'is_active': user.is_active
+            })
+        else:
+            messages.success(request, f'Utilisateur {"activé" if user.is_active else "désactivé"} avec succès.')
+    
+    return redirect('gestion_utilisateurs')
+
 @role_required(['assistant', 'responsable', 'admin'])
 def demande_create(request):
     if request.method == 'POST':
@@ -333,7 +444,7 @@ def demande_create_ajax(request):
         # Journalisation
         JournalAction.objects.create(
             utilisateur=request.user,
-            action="Création demande d'aide via AJAX",
+            action="Création demande d'aide",
             details=f"Demande {demande.get_type_demande_display()} créée pour la famille {famille.nom_famille} (ID: {demande.id})"
         )
         
@@ -414,6 +525,90 @@ def dashboard_view(request):
         }
         return render(request, 'victimes/dashboard_assistant.html', context)
     
+    elif request.user.role == 'responsable' or request.user.role == 'admin':
+        # Statistiques responsable/admin
+        total_demandes = DemandeAide.objects.count()
+        demandes_en_attente = DemandeAide.objects.filter(statut='soumise').count()
+        demandes_validees = DemandeAide.objects.filter(statut='validee').count()
+        demandes_refusees = DemandeAide.objects.filter(statut='refusee').count()
+        
+        # Demandes récentes à traiter
+        demandes_a_traiter = DemandeAide.objects.filter(statut='soumise').order_by('-date_creation')[:5]
+        
+        # Statistiques sur les familles
+        total_familles = Famille.objects.count()
+        familles_avec_demandes = Famille.objects.filter(demandes__isnull=False).distinct().count()
+        
+        # Statistiques sur les victimes
+        total_victimes_resp = FicheVictime.objects.count()
+        victimes_avec_famille = FicheVictime.objects.filter(famille__isnull=False).count()
+        
+        # Calcul du taux de traitement
+        taux_traitement = ((demandes_validees + demandes_refusees) / total_demandes * 100) if total_demandes > 0 else 0
+        
+        # Activités récentes - validations et refus
+        activites_validation = JournalAction.objects.filter(
+            action__in=['Validation de demande', 'Refus de demande']
+        ).order_by('-date_action')[:5]
+        
+        context = {
+            'total_demandes': total_demandes,
+            'demandes_en_attente': demandes_en_attente,
+            'demandes_validees': demandes_validees,
+            'demandes_refusees': demandes_refusees,
+            'demandes_a_traiter': demandes_a_traiter,
+            'total_familles': total_familles,
+            'familles_avec_demandes': familles_avec_demandes,
+            'total_victimes_resp': total_victimes_resp,
+            'victimes_avec_famille': victimes_avec_famille,
+            'taux_traitement': round(taux_traitement, 1),
+            'activites_validation': activites_validation,
+        }
+        return render(request, 'victimes/dashboard_responsable.html', context)
+    
+    elif request.user.role == 'admin':
+        # Statistiques administrateur
+        total_utilisateurs = User.objects.count()
+        utilisateurs_actifs = User.objects.filter(is_active=True).count()
+        actions_aujourd_hui = JournalAction.objects.filter(
+            date_action__date=timezone.now().date()
+        ).count()
+        actions_cette_semaine = JournalAction.objects.filter(
+            date_action__week=timezone.now().isocalendar()[1],
+            date_action__year=timezone.now().year
+        ).count()
+        
+        # Répartition par rôles
+        repartition_roles = {
+            'agents': User.objects.filter(role='agent').count(),
+            'assistants': User.objects.filter(role='assistant').count(),
+            'responsables': User.objects.filter(role='responsable').count(),
+            'admins': User.objects.filter(role='admin').count(),
+        }
+        
+        # Activités récentes du système
+        activites_systeme = JournalAction.objects.select_related('utilisateur').order_by('-date_action')[:10]
+        
+        # Utilisateurs les plus actifs
+        from django.db.models import Count
+        utilisateurs_actifs_stats = User.objects.annotate(
+            nb_actions=Count('journalaction')
+        ).filter(nb_actions__gt=0).order_by('-nb_actions')[:5]
+        
+        context = {
+            'total_utilisateurs': total_utilisateurs,
+            'utilisateurs_actifs': utilisateurs_actifs,
+            'actions_aujourd_hui': actions_aujourd_hui,
+            'actions_cette_semaine': actions_cette_semaine,
+            'repartition_roles': repartition_roles,
+            'activites_systeme': activites_systeme,
+            'utilisateurs_actifs_stats': utilisateurs_actifs_stats,
+            'total_victimes': total_victimes,
+            'total_demandes': total_demandes,
+            'affaires_resolues': affaires_resolues,
+        }
+        return render(request, 'victimes/dashboard_admin.html', context)
+    
     # Dashboard général pour autres rôles
     context = {
         'total_victimes': total_victimes,
@@ -484,7 +679,7 @@ def ajouter_famille_ajax(request):
             # Journalisation
             JournalAction.objects.create(
                 utilisateur=request.user,
-                action="Création famille via AJAX",
+                action="Création famille",
                 details=f"Famille {famille.nom_famille} créée pour la victime {victime.prenom} {victime.nom} (ID: {famille.id})"
             )
             
@@ -526,7 +721,7 @@ def ajouter_membre_ajax(request):
             # Journalisation
             JournalAction.objects.create(
                 utilisateur=request.user,
-                action="Ajout membre famille via AJAX",
+                action="Ajout membre famille",
                 details=f"Membre {membre.prenom} {membre.nom} ajouté à la famille {famille.nom_famille} (ID: {membre.id})"
             )
             
@@ -687,7 +882,7 @@ def victime_modifier_ajax(request, victime_id):
         # Journalisation
         JournalAction.objects.create(
             utilisateur=request.user,
-            action="Modification fiche victime via AJAX",
+            action="Modification fiche victime",
             details=f"Fiche victime {victime.prenom} {victime.nom} modifiée (ID: {victime.id})"
         )
         

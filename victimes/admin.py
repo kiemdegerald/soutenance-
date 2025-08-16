@@ -1,11 +1,22 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, Famille, MembreFamille, FicheVictime, DemandeAide, JournalAction
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ("username", "email", "role", "is_staff", "is_active")
+class UserAdmin(BaseUserAdmin):
+    list_display = ("username", "email", "first_name", "last_name", "role", "is_staff", "is_active")
     list_filter = ("role", "is_staff", "is_active")
-    search_fields = ("username", "email")
+    search_fields = ("username", "email", "first_name", "last_name")
+    
+    # Ajouter le champ role aux fieldsets existants
+    fieldsets = BaseUserAdmin.fieldsets + (
+        ('Informations supplémentaires', {'fields': ('role',)}),
+    )
+    
+    # Ajouter le champ role lors de la création
+    add_fieldsets = BaseUserAdmin.add_fieldsets + (
+        ('Informations supplémentaires', {'fields': ('role',)}),
+    )
 
 @admin.register(Famille)
 class FamilleAdmin(admin.ModelAdmin):

@@ -31,4 +31,8 @@ urlpatterns = [
     path('victime/modifier/<int:victime_id>/', views.victime_modifier_ajax, name='victime_modifier_ajax'),
     # URL AJAX pour créer une demande d'aide
     path('demande/creer/', views.demande_create_ajax, name='demande_create_ajax'),
+    # URLs pour l'administration
+    path('administration/utilisateurs/', views.gestion_utilisateurs, name='gestion_utilisateurs'),
+    path('administration/journal/', views.journal_actions, name='journal_actions'),
+    path('administration/utilisateur/<int:user_id>/toggle/', views.toggle_user_status, name='toggle_user_status'),
 ]
