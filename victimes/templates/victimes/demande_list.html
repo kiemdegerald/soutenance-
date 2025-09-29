@@ -163,37 +163,97 @@
         </div>
     </div>
     
-    <div style="max-height: 600px; overflow-y: auto;">
+    <style>
+    .demande-assistant-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 28px;
+        margin-bottom: 18px;
+    }
+    .demande-assistant-card {
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 2px 8px rgba(59,130,246,0.07);
+        padding: 22px 20px 18px 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 18px;
+        transition: box-shadow 0.18s, transform 0.18s;
+        position: relative;
+        border: 1px solid #e5e7eb;
+    }
+    .demande-assistant-card:hover {
+        box-shadow: 0 8px 32px rgba(59,130,246,0.10);
+        transform: translateY(-2px) scale(1.01);
+    }
+    .demande-assistant-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        color: #fff;
+        margin-right: 8px;
+    }
+    .demande-assistant-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 12px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    .demande-assistant-badge.validee { background: #e0f7ef; color: #059669; }
+    .demande-assistant-badge.soumise { background: #fef3c7; color: #d97706; }
+    .demande-assistant-badge.refusee { background: #fee2e2; color: #ef4444; }
+    .demande-assistant-badge.autre { background: #e0e7ef; color: #64748b; }
+    .demande-assistant-details {
+        flex: 1;
+    }
+    .demande-assistant-type {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 1.08rem;
+    }
+    .demande-assistant-meta {
+        font-size: 0.93rem;
+        color: #6b7280;
+        margin: 2px 0 0 0;
+    }
+    .demande-assistant-date {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+    </style>
+    <div class="demande-assistant-grid">
         {% for demande in demandes %}
-        <div style="display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3f4f6;">
-            <div style="width: 40px; height: 40px; background: {% if demande.statut == 'validee' %}#10b98120{% elif demande.statut == 'soumise' %}#fbbf2420{% else %}#ef444420{% endif %}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                <i class="fas fa-hands-helping" style="color: {% if demande.statut == 'validee' %}#10b981{% elif demande.statut == 'soumise' %}#fbbf24{% else %}#ef4444{% endif %};"></i>
+        <div class="demande-assistant-card">
+            <div class="demande-assistant-avatar" style="
+                {% if demande.statut == 'validee' %}background: linear-gradient(135deg, #10b981, #059669);
+                {% elif demande.statut == 'soumise' %}background: linear-gradient(135deg, #fbbf24, #d97706);
+                {% elif demande.statut == 'refusee' %}background: linear-gradient(135deg, #ef4444, #dc2626);
+                {% else %}background: linear-gradient(135deg, #64748b, #475569);{% endif %}">
+                <i class="fas fa-hands-helping"></i>
             </div>
-            <div style="flex: 1;">
-                <div style="font-weight: 500; color: #1f2937;">{{ demande.get_type_demande_display }}</div>
-                <div style="font-size: 0.8rem; color: #6b7280;">Famille {{ demande.famille.nom_famille }} - {{ demande.famille.ville }}</div>
+            <div class="demande-assistant-details">
+                <div class="demande-assistant-type">{{ demande.get_type_demande_display }}
+                    <span class="demande-assistant-badge {% if demande.statut == 'validee' %}validee{% elif demande.statut == 'soumise' %}soumise{% elif demande.statut == 'refusee' %}refusee{% else %}autre{% endif %}">{{ demande.get_statut_display }}</span>
+                </div>
+                <div class="demande-assistant-meta"><i class="fas fa-users" style="margin-right: 4px; color: #3b82f6;"></i>Famille {{ demande.famille.nom_famille }}{% if demande.famille.ville %} <span style="margin-left: 8px;"><i class="fas fa-map-marker-alt" style="margin-right: 3px; color: #ef4444;"></i>{{ demande.famille.ville }}</span>{% endif %}</div>
                 {% if demande.description %}
-                <div style="font-size: 0.8rem; color: #6b7280;">{{ demande.description|truncatechars:50 }}</div>
+                <div class="demande-assistant-meta"><i class="fas fa-quote-left" style="color: #3b82f6; margin-right: 6px; font-size: 0.8rem;"></i>{{ demande.description|truncatechars:60 }}</div>
                 {% endif %}
                 {% if demande.cree_par %}
-                <div style="font-size: 0.8rem; color: #6b7280;">Créée par: {{ demande.cree_par.username }}</div>
+                <div class="demande-assistant-date">Créée par : {{ demande.cree_par.username }} | {{ demande.date_creation|date:"d/m/Y" }}</div>
+                {% else %}
+                <div class="demande-assistant-date">{{ demande.date_creation|date:"d/m/Y" }}</div>
                 {% endif %}
-            </div>
-            <div style="text-align: right;">
-                <div style="padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 500; 
-                    {% if demande.statut == 'validee' %}background: #10b98120; color: #10b981;
-                    {% elif demande.statut == 'soumise' %}background: #fbbf2420; color: #fbbf24;
-                    {% elif demande.statut == 'refusee' %}background: #ef444420; color: #ef4444;
-                    {% else %}background: #6b728020; color: #6b7280;{% endif %}">
-                    {{ demande.get_statut_display }}
-                </div>
-                <div style="font-size: 0.7rem; color: #6b7280; margin-top: 4px;">
-                    {{ demande.date_creation|date:"d/m/Y" }}
-                </div>
             </div>
         </div>
         {% empty %}
-        <div style="text-align: center; padding: 40px; color: #6b7280;">
+        <div style="text-align: center; padding: 40px; color: #6b7280; grid-column: 1/-1;">
             <i class="fas fa-hands-helping" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
             <p>Aucune demande d'aide enregistrée</p>
             <a href="{% url 'demande_create' %}" class="btn btn-primary">

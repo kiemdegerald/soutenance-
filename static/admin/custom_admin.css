@@ -1,0 +1,294 @@
+/*
+ * Personnalisation avancée de l'admin Django/Jazzmin pour un look moderne, inspiré du dashboard responsable
+ */
+
+/* --- UI/UX Dashboard Admin Jazzmin --- */
+
+/* Fond général et sidebar */
+body, .content-wrapper {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+
+/* Bloc principal du tableau de bord */
+#content-main > .dashboard-content, #content-main > .dashboard-main, #content-main > .module {
+    background: linear-gradient(135deg, #f8fafc 60%, #e0e7ef 100%) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 8px 32px rgba(59,130,246,0.10) !important;
+    padding: 36px 28px !important;
+    margin-bottom: 36px !important;
+    border: 1.5px solid #e5e7eb !important;
+}
+
+/* Cartes et blocs principaux */
+.card, .box, .jazzmin-card, .module, .changeform-container {
+    border-radius: 16px !important;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.06) !important;
+    border: none !important;
+    background: #fff !important;
+}
+
+/* Cartes stats sur le dashboard */
+.dashboard-content .small-box, .dashboard-main .small-box, .dashboard-content .dashboard-stat-card {
+    background: linear-gradient(135deg, #fff 80%, #f3f4f6 100%) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.08) !important;
+    border: 1px solid #e5e7eb !important;
+    margin-bottom: 18px !important;
+    padding: 28px 18px !important;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.dashboard-content .small-box:hover, .dashboard-main .small-box:hover {
+    box-shadow: 0 8px 32px rgba(59,130,246,0.13) !important;
+    transform: translateY(-2px) scale(1.01);
+}
+
+/* Titres et header */
+.content-header h1, .jazzmin-page-title, .module caption, .card-title {
+    color: #1f2937 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+}
+.dashboard-content h1, .dashboard-main h1, .dashboard-content .dashboard-title, .dashboard-main .dashboard-title {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    color: #1d4ed8 !important;
+    margin-bottom: 22px !important;
+    letter-spacing: 0.01em;
+}
+.dashboard-content h2, .dashboard-main h2 {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    color: #374151 !important;
+    margin-bottom: 12px !important;
+}
+
+/* Boutons principaux */
+.btn, .button, input[type="submit"], button {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.btn-primary, .button.default, input[type="submit"], button.default {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-primary:hover, .button.default:hover, input[type="submit"]:hover, button.default:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af) !important;
+    color: #fff !important;
+}
+
+/* Statistiques et badges */
+.badge, .label, .stat-badge {
+    border-radius: 12px !important;
+    font-size: 0.92em !important;
+    font-weight: 600 !important;
+    padding: 5px 13px !important;
+    background: #fbbf2420 !important;
+    color: #f59e0b !important;
+}
+
+/* Tableaux */
+.table, .results, .change-list table {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: #fff !important;
+}
+.table th, .results th {
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+    font-weight: 700 !important;
+}
+
+/* Sidebar */
+.main-sidebar, .sidebar {
+    background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%) !important;
+    color: #fff !important;
+}
+.main-sidebar .brand-link, .sidebar .brand-link {
+    background: transparent !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-size: 1.2rem !important;
+}
+
+/* Footer */
+.main-footer {
+    background: #f3f4f6 !important;
+    color: #6b7280 !important;
+    border-radius: 0 0 16px 16px !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+}
+
+/* Section actions récentes */
+.dashboard-content .recent-actions, .dashboard-main .recent-actions {
+    background: #f0f9ff !important;
+    border-radius: 14px !important;
+    border-left: 4px solid #3b82f6 !important;
+    padding: 18px 18px 10px 18px !important;
+    margin-bottom: 18px !important;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.06) !important;
+}
+
+/* Responsive et padding */
+.content, .content-wrapper, .container-fluid {
+    padding: 24px !important;
+}
+
+/* Responsive dashboard */
+@media (max-width: 900px) {
+    #content-main > .dashboard-content, #content-main > .dashboard-main, #content-main > .module {
+        padding: 16px 4vw !important;
+    }
+}
+
+/* Icônes */
+.fa, .fas, .far, .fal, .fad, .fab {
+    font-size: 1.1em !important;
+}
+
+/* Animation légère sur hover */
+.card:hover, .box:hover, .jazzmin-card:hover, .module:hover {
+    box-shadow: 0 8px 32px rgba(59,130,246,0.13) !important;
+    transform: translateY(-2px) scale(1.01);
+}
+
+/* Cadre principal du dashboard */
+.dashboard-main, .dashboard-content, .content-wrapper {
+    background: #f8fafc !important;
+    border-radius: 18px !important;
+    box-shadow: 0 4px 24px rgba(59,130,246,0.07) !important;
+    padding: 32px 24px !important;
+    margin-bottom: 32px !important;
+}
+
+/* Section statistiques */
+.dashboard-stats, .dashboard-widgets, .dashboard-module, .dashboard-box {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.dashboard-stat-card, .dashboard-widget, .small-box {
+    background: #fff !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 12px rgba(16,185,129,0.08) !important;
+    padding: 24px 18px !important;
+    min-width: 220px;
+    flex: 1 1 220px;
+    text-align: center;
+    margin-bottom: 0 !important;
+}
+.dashboard-stat-card h3, .dashboard-widget h3 {
+    color: #1f2937 !important;
+    font-size: 2.1rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+}
+.dashboard-stat-card p, .dashboard-widget p {
+    color: #6b7280 !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 0 !important;
+}
+
+/* Titres et séparateurs */
+.dashboard-title, .content-header h1, .jazzmin-page-title {
+    font-size: 1.6rem !important;
+    font-weight: 700 !important;
+    color: #2563eb !important;
+    margin-bottom: 18px !important;
+    letter-spacing: 0.01em;
+}
+.dashboard-section-title {
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin-bottom: 10px !important;
+    border-left: 4px solid #3b82f6;
+    padding-left: 12px;
+}
+
+/* --- Page de connexion admin Django/Jazzmin --- */
+.login-page, .login-box {
+    background: linear-gradient(135deg, #f8fafc 60%, #e0e7ef 100%) !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.login-box {
+    background: #fff !important;
+    border-radius: 22px !important;
+    box-shadow: 0 8px 32px rgba(59,130,246,0.10) !important;
+    padding: 48px 36px 36px 36px !important;
+    max-width: 400px !important;
+    width: 100% !important;
+    border: 1.5px solid #e5e7eb !important;
+}
+.login-logo, .login-logo a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 2.1rem !important;
+    font-weight: 800 !important;
+    color: #1d4ed8 !important;
+    margin-bottom: 18px !important;
+    letter-spacing: 0.01em;
+    text-align: center !important;
+}
+.login-logo img {
+    height: 54px !important;
+    width: auto !important;
+    margin-right: 10px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.10);
+}
+.login-box-msg {
+    font-size: 1.1rem !important;
+    color: #374151 !important;
+    margin-bottom: 18px !important;
+    text-align: center !important;
+}
+.login-box input[type="text"], .login-box input[type="password"] {
+    border-radius: 8px !important;
+    border: 1.5px solid #d1d5db !important;
+    padding: 12px 14px !important;
+    font-size: 1.05rem !important;
+    margin-bottom: 18px !important;
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+}
+.login-box .btn-primary, .login-box button[type="submit"] {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    padding: 12px 0 !important;
+    margin-top: 8px !important;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08) !important;
+    border: none !important;
+    width: 100% !important;
+    transition: background 0.2s;
+}
+.login-box .btn-primary:hover, .login-box button[type="submit"]:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af) !important;
+}
+.login-box .help-block, .login-box .invalid-feedback {
+    color: #ef4444 !important;
+    font-size: 0.98rem !important;
+    margin-bottom: 8px !important;
+}
+.login-box .form-group {
+    margin-bottom: 0 !important;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .dashboard-stats, .dashboard-widgets {
+        flex-direction: column;
+        gap: 12px;
+    }
+}

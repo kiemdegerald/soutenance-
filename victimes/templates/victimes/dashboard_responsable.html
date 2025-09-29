@@ -5,35 +5,32 @@
 
 {% block content %}
 <div style="padding: 20px;">
-    <!-- En-tête avec salutation -->
-    <div style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);">
-        <div style="display: flex; align-items: center; justify-content: between;">
-            <div>
-                <h1 style="margin: 0; font-size: 2.2rem; font-weight: 700;">Bonjour, {{ user.first_name }} {{ user.last_name }}</h1>
-                <p style="margin: 10px 0 0 0; font-size: 1.1rem; opacity: 0.9;">Responsable - Tableau de bord de gestion</p>
-                <p style="margin: 5px 0 0 0; font-size: 0.95rem; opacity: 0.8;">{{ "now"|date:"l d F Y" }}</p>
+    <!-- Bloc horizontal pleine largeur : En-tête à gauche, alerte à droite -->
+    <div style="display: flex; justify-content: space-between; gap: 32px; margin-bottom: 28px; width: 100%;">
+        <!-- En-tête compacte à gauche -->
+        <div style="flex:1; background: linear-gradient(135deg, #f8fafc, #fef3e2); color: #374151; padding: 22px 32px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; align-items: center; min-width: 260px;">
+            <div style="flex:1;">
+                <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #1f2937;">Bonjour, {{ user.first_name }} {{ user.last_name }}</h2>
+                <p style="margin: 4px 0 0 0; font-size: 1rem; color: #6b7280;">Responsable - Tableau de bord de gestion</p>
+                <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #9ca3af;">{{ "now"|date:"l d F Y" }}</p>
             </div>
-            <div style="text-align: right;">
-                <i class="fas fa-user-tie" style="font-size: 4rem; opacity: 0.3;"></i>
-            </div>
+            <i class="fas fa-user-tie" style="font-size: 2.2rem; color: #d1d5db; margin-left: 18px;"></i>
         </div>
-    </div>
 
-    <!-- Alerte pour demandes en attente -->
-    {% if demandes_en_attente > 0 %}
-    <div style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; display: flex; align-items: center;">
-        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-right: 15px;"></i>
-        <div>
-            <h4 style="margin: 0; font-weight: 600;">{{ demandes_en_attente }} demande{{ demandes_en_attente|pluralize }} en attente de validation</h4>
-            <p style="margin: 5px 0 0 0; opacity: 0.9;">Des familles attendent votre décision pour leurs demandes d'aide</p>
-        </div>
-        <div style="margin-left: auto;">
-            <a href="{% url 'suivi_aides' %}?statut=soumise" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                <i class="fas fa-gavel me-2"></i>Traiter les demandes
+        {% if demandes_en_attente > 0 %}
+        <!-- Alerte compacte à droite -->
+        <div style="flex:1; background: linear-gradient(135deg, #fef9f4, #f3f4f6); color: #92400e; padding: 18px 28px; border-radius: 14px; display: flex; align-items: center; border-left: 4px solid #f59e0b; box-shadow: 0 1px 4px rgba(0,0,0,0.03); min-width: 260px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 1.3rem; margin-right: 14px; color: #f59e0b;"></i>
+            <div style="flex:1;">
+                <div style="font-weight: 600; font-size: 1.05rem; color: #b45309;">{{ demandes_en_attente }} demande{{ demandes_en_attente|pluralize }} en attente de validation</div>
+                <div style="font-size: 0.9rem; color: #a16207;">Des familles attendent votre décision</div>
+            </div>
+            <a href="{% url 'suivi_aides' %}?statut=soumise" class="btn" style="background: rgba(245, 158, 11, 0.10); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); padding: 7px 16px; border-radius: 7px; text-decoration: none; font-weight: 600; font-size: 0.9rem; margin-left:16px;">
+                <i class="fas fa-gavel me-2"></i>Traiter
             </a>
         </div>
+        {% endif %}
     </div>
-    {% endif %}
 
     <!-- Statistiques principales -->
     <div class="row mb-4">
@@ -163,31 +160,97 @@
                     </div>
                 </div>
                 
+                <style>
+                .demande-dashboard-card {
+                    background: #fff7ed;
+                    border-radius: 13px;
+                    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.07);
+                    display: flex;
+                    align-items: center;
+                    padding: 18px 22px;
+                    margin-bottom: 16px;
+                    transition: box-shadow 0.18s, transform 0.18s;
+                    border: 1px solid #fde68a;
+                }
+                .demande-dashboard-card:hover {
+                    box-shadow: 0 8px 32px rgba(245, 158, 11, 0.13);
+                    transform: translateY(-2px) scale(1.01);
+                }
+                .demande-dashboard-avatar {
+                    width: 44px;
+                    height: 44px;
+                    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+                    color: #fff;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.3rem;
+                    margin-right: 18px;
+                }
+                .demande-dashboard-details {
+                    flex: 1;
+                }
+                .demande-dashboard-type {
+                    font-weight: 600;
+                    color: #b45309;
+                    font-size: 1.05rem;
+                }
+                .demande-dashboard-meta {
+                    font-size: 0.9rem;
+                    color: #6b7280;
+                    margin: 2px 0 0 0;
+                }
+                .demande-dashboard-date {
+                    font-size: 0.8rem;
+                    color: #9ca3af;
+                }
+                .demande-dashboard-badge {
+                    display: inline-block;
+                    background: #fbbf2420;
+                    color: #f59e0b;
+                    padding: 5px 13px;
+                    border-radius: 12px;
+                    font-size: 0.82rem;
+                    font-weight: 600;
+                    margin-left: 8px;
+                }
+                .demande-dashboard-actions button {
+                    border: none;
+                    outline: none;
+                    padding: 7px 13px;
+                    border-radius: 7px;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: background 0.18s, color 0.18s;
+                    margin-left: 6px;
+                }
+                .demande-dashboard-actions .valider { background: #10b981; color: #fff; }
+                .demande-dashboard-actions .valider:hover { background: #059669; }
+                .demande-dashboard-actions .refuser { background: #ef4444; color: #fff; }
+                .demande-dashboard-actions .refuser:hover { background: #dc2626; }
+                </style>
                 <div style="max-height: 400px; overflow-y: auto;">
                     {% if demandes_a_traiter %}
                         {% for demande in demandes_a_traiter %}
-                        <div style="display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f3f4f6;">
-                            <div style="width: 40px; height: 40px; background: #fbbf2420; color: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 500; color: #1f2937; font-size: 0.95rem;">{{ demande.get_type_demande_display }}</div>
-                                <div style="font-size: 0.8rem; color: #6b7280; margin: 2px 0;">
-                                    Famille {{ demande.famille.nom_famille }}
-                                    {% if demande.famille.ville %} - {{ demande.famille.ville }}{% endif %}
+                        <div class="demande-dashboard-card">
+                            <div class="demande-dashboard-avatar"><i class="fas fa-clock"></i></div>
+                            <div class="demande-dashboard-details">
+                                <span class="demande-dashboard-type">{{ demande.get_type_demande_display }}</span>
+                                <span class="demande-dashboard-badge">En attente</span>
+                                <div class="demande-dashboard-meta">
+                                    <i class="fas fa-users" style="margin-right: 4px; color: #3b82f6;"></i>Famille {{ demande.famille.nom_famille }}
+                                    {% if demande.famille.ville %}<span style="margin-left: 8px;"><i class="fas fa-map-marker-alt" style="margin-right: 3px; color: #ef4444;"></i>{{ demande.famille.ville }}</span>{% endif %}
                                 </div>
-                                <div style="font-size: 0.75rem; color: #9ca3af;">
+                                <div class="demande-dashboard-date">
                                     Créée le {{ demande.date_creation|date:"d/m/Y à H:i" }}
                                     {% if demande.cree_par %} par {{ demande.cree_par.first_name }} {{ demande.cree_par.last_name }}{% endif %}
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button onclick="validerDemande({{ demande.id }})" class="btn btn-success btn-sm" style="padding: 5px 10px;">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button onclick="refuserDemande({{ demande.id }})" class="btn btn-danger btn-sm" style="padding: 5px 10px;">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                            <div class="demande-dashboard-actions" style="display: flex; align-items: center;">
+                                <button onclick="validerDemande({{ demande.id }})" class="valider" title="Valider"><i class="fas fa-check"></i></button>
+                                <button onclick="refuserDemande({{ demande.id }})" class="refuser" title="Refuser"><i class="fas fa-times"></i></button>
                             </div>
                         </div>
                         {% endfor %}

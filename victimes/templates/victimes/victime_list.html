@@ -6,130 +6,187 @@
 
 {% block extra_css %}
 <style>
-/* Animation de rotation pour le spinner de chargement */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
-
-/* Animation d'apparition douce pour les modals */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
-/* Style pour les modals avec animation */
-.modal-content-animated {
-    animation: fadeIn 0.3s ease-out;
+.modal-content-animated { animation: fadeIn 0.3s ease-out; }
+.victime-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, #f8fafc 60%, #e0e7ef 100%);
+    border-radius: 14px;
+    padding: 24px 32px 18px 32px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-
-/* Effet de survol pour les cartes */
-.card-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+.victime-header .chart-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #374151;
+    letter-spacing: 1px;
 }
-
-/* Styles pour les boutons d'action */
-.action-button {
-    transition: all 0.2s ease;
+.victime-header .subtitle {
+    color: #6b7280;
+    font-size: 1rem;
+    margin-top: 2px;
+}
+.victime-header .btn {
+    font-size: 1rem;
+    padding: 10px 22px;
     border-radius: 8px;
-    padding: 8px 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.08);
 }
-
-.action-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+.victime-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 28px;
 }
+.victime-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 26px 24px 18px 24px;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+}
+.victime-card:hover {
+    box-shadow: 0 8px 32px rgba(59,130,246,0.10);
+    transform: translateY(-3px) scale(1.01);
+}
+.victime-card .victime-info {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.victime-avatar {
+    width: 54px;
+    height: 54px;
+    background: #e0e7ef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #667eea;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.07);
+}
+.victime-details {
+    flex: 1;
+}
+.victime-details .name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 1.13rem;
+}
+.victime-details .meta {
+    font-size: 0.93rem;
+    color: #6b7280;
+    margin: 2px 0 0 0;
+}
+.victime-details .date {
+    font-size: 0.82rem;
+    color: #9ca3af;
+}
+.victime-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+.victime-actions button, .victime-actions a {
+    border: none;
+    outline: none;
+    padding: 8px 13px;
+    border-radius: 7px;
+    font-size: 0.93rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.victime-actions .view { background: #3b82f6; color: #fff; }
+.victime-actions .edit { background: #f59e0b; color: #fff; }
+.victime-actions .famille { background: #10b981; color: #fff; }
+.victime-actions .membres { background: #8b5cf6; color: #fff; }
+.victime-actions .demande { background: #059669; color: #fff; }
+.victime-actions button:hover, .victime-actions a:hover { filter: brightness(0.95); }
+.badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-top: 8px;
+}
+.badge-famille { background: #e0f7ef; color: #059669; }
+.badge-missing { background: #fef3c7; color: #d97706; }
 </style>
 {% endblock %}
 
 {% block content %}
 {% csrf_token %}
-<div class="chart-container">
-    <div class="chart-header">
-        <div>
-            <div class="chart-title">FICHES VICTIMES</div>
-            <div style="color: #6b7280; font-size: 0.9rem;">Gestion des fiches victimes</div>
-        </div>
-        <div>
-            <a href="{% url 'victime_create' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nouvelle Fiche
-            </a>
-        </div>
+<div class="victime-header">
+    <div>
+        <div class="chart-title">FICHES VICTIMES</div>
+        <div class="subtitle">Gestion des fiches victimes</div>
     </div>
-    
-    <div style="max-height: 600px; overflow-y: auto;">
-        {% for victime in victimes %}
-        <div class="card-hover" style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; padding: 20px; transition: all 0.3s ease;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; flex: 1;">
-                    <div style="width: 50px; height: 50px; background: #667eea20; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px;">
-                        <i class="fas fa-user" style="color: #667eea; font-size: 1.2rem;"></i>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: #1f2937; font-size: 1.1rem;">{{ victime.prenom }} {{ victime.nom }}</div>
-                        <div style="font-size: 0.9rem; color: #6b7280; margin: 3px 0;">{{ victime.get_sexe_display }}</div>
-                        <div style="font-size: 0.8rem; color: #6b7280;">Créé le {{ victime.date_creation|date:"d/m/Y à H:i" }}</div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    {% if victime.famille %}
-                        <div style="background: #10b98120; color: #059669; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; text-align: center;">
-                            <i class="fas fa-check-circle"></i> Famille enregistrée
-                        </div>
-                        <button onclick="openMembresModal({{ victime.famille.id }})" 
-                                style="background: #8b5cf6; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;"
-                                onmouseover="this.style.background='#7c3aed'" 
-                                onmouseout="this.style.background='#8b5cf6'">
-                            <i class="fas fa-user-plus"></i> Ajouter Membres
-                        </button>
-                    {% else %}
-                        <button onclick="openFamilleModal({{ victime.id }})" 
-                                style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;"
-                                onmouseover="this.style.background='#059669'" 
-                                onmouseout="this.style.background='#10b981'">
-                            <i class="fas fa-users"></i> Ajouter Famille
-                        </button>
-                        <div style="background: #f5950920; color: #d97706; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; text-align: center;">
-                            <i class="fas fa-exclamation-triangle"></i> Famille manquante
-                        </div>
-                    {% endif %}
-                    
-                    <div style="display: flex; gap: 5px;">
-                        <button onclick="viewVictime({{ victime.id }})" 
-                                style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;"
-                                title="Voir détails">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        {% if user.role == 'agent' or user.role == 'responsable' or user.role == 'admin' %}
-                        <button onclick="editVictime({{ victime.id }})" 
-                                style="background: #f59e0b; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;"
-                                title="Modifier">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        {% endif %}
-                        {% if user.role == 'assistant' and victime.famille %}
-                        <button onclick="openDemandeModal({{ victime.famille.id }})" 
-                                style="background: #10b981; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;"
-                                title="Créer demande d'aide">
-                            <i class="fas fa-hand-holding-heart"></i>
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
+    <a href="{% url 'victime_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nouvelle Fiche
+    </a>
+</div>
+<div class="victime-grid">
+    {% for victime in victimes %}
+    <div class="victime-card">
+        <div class="victime-info">
+            <div class="victime-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="victime-details">
+                <div class="name">{{ victime.prenom }} {{ victime.nom }}</div>
+                <div class="meta">{{ victime.get_sexe_display }}</div>
+                <div class="date">Créé le {{ victime.date_creation|date:"d/m/Y à H:i" }}</div>
+                {% if victime.famille %}
+                    <span class="badge badge-famille"><i class="fas fa-check-circle"></i> Famille enregistrée</span>
+                {% else %}
+                    <span class="badge badge-missing"><i class="fas fa-exclamation-triangle"></i> Famille manquante</span>
+                {% endif %}
             </div>
         </div>
-        {% empty %}
-        <div style="text-align: center; padding: 40px; color: #6b7280;">
-            <i class="fas fa-user-injured" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
-            <p>Aucune fiche victime enregistrée</p>
-            <a href="{% url 'victime_create' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Créer la première fiche
-            </a>
+        <div class="victime-actions">
+            {% if victime.famille %}
+                <button class="membres" onclick="openMembresModal({{ victime.famille.id }})"><i class="fas fa-user-plus"></i> Membres</button>
+            {% else %}
+                <button class="famille" onclick="openFamilleModal({{ victime.id }})"><i class="fas fa-users"></i> Ajouter Famille</button>
+            {% endif %}
+            <button class="view" onclick="viewVictime({{ victime.id }})" title="Voir détails"><i class="fas fa-eye"></i> Voir</button>
+            {% if user.role == 'agent' or user.role == 'responsable' or user.role == 'admin' %}
+            <button class="edit" onclick="editVictime({{ victime.id }})" title="Modifier"><i class="fas fa-edit"></i> Modifier</button>
+            {% endif %}
+            {% if user.role == 'assistant' and victime.famille %}
+            <button class="demande" onclick="openDemandeModal({{ victime.famille.id }})" title="Créer demande d'aide"><i class="fas fa-hand-holding-heart"></i> Demande</button>
+            {% endif %}
         </div>
-        {% endfor %}
     </div>
+    {% empty %}
+    <div style="text-align: center; padding: 40px; color: #6b7280; grid-column: 1/-1;">
+        <i class="fas fa-user-injured" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
+        <p>Aucune fiche victime enregistrée</p>
+        <a href="{% url 'victime_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Créer la première fiche
+        </a>
+    </div>
+    {% endfor %}
 </div>
 
 <!-- Modal pour ajouter une famille -->

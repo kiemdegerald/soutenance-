@@ -110,13 +110,66 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
+LANGUAGE_CODE = "fr"
+TIME_ZONE = "Africa/Ouagadougou"
 USE_I18N = True
-
 USE_TZ = True
+# Jazzmin settings pour interface en français
+JAZZMIN_SETTINGS = {
+    "site_title": "Administration Gendarmerie",
+    "site_header": "Gendarmerie - Administration",
+    "site_brand": "Gendarmerie",
+    "welcome_sign": "Bienvenue dans l'administration de la Gendarmerie",
+    "copyright": "Gendarmerie Nationale",
+    "user_avatar": None,
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "language_chooser": True,
+    "site_logo": "images/OIP.webp",  # Placez OIP.webp dans static/images/
+    "site_logo_classes": "",  # logo sur login seulement
+    "site_brand": "Gendarmerie",
+    "site_icon": None,
+    "topmenu_links": [
+        {"name": "Accueil", "url": "/admin/", "permissions": ["auth.view_user"]},
+        {"model": "victimes.user"},
+        {"app": "victimes"},
+    ],
+    "usermenu_links": [
+        {"name": "Site public", "url": "/", "new_window": True},
+    ],
+    "show_ui_builder": False,
+    "order_with_respect_to": ["victimes", "auth", "admin"],
+    "custom_css": "static/admin/custom_admin.css",  # Ajoutez un fichier CSS personnalisé si besoin
+    "custom_js": None,
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {"victimes.user": "collapsible"},
+    "related_modal_active": True,
+    "navigation_expanded": True,
+    "search_model": "victimes.User",
+    "show_sidebar": True,
+    "hide_apps": [],
+    "hide_models": [],
+    "icons": {
+        "victimes.user": "fas fa-user-shield",
+        "victimes.famille": "fas fa-users",
+        "victimes.membrefamille": "fas fa-user-friends",
+        "victimes.fichevictime": "fas fa-id-card-alt",
+        "victimes.demandeaide": "fas fa-hands-helping",
+        "victimes.journalaction": "fas fa-history",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "show_ui_builder": False,
+    "custom_links": {
+        "victimes": [{
+            "name": "Documentation",
+            "url": "https://docs.djangoproject.com/fr/5.1/",
+            "icon": "fas fa-book",
+            "permissions": ["auth.view_user"]
+        }],
+    },
+    "footer": "<b>Gendarmerie Nationale</b> &copy; 2025 - Tous droits réservés.",
+}
 
 
 # Static files (CSS, JavaScript, Images)

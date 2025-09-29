@@ -1,232 +1,257 @@
 {% extends 'victimes/base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+.suivi-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, #f8fafc 60%, #e0e7ef 100%);
+    border-radius: 14px;
+    padding: 24px 32px 18px 32px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.suivi-header .chart-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #374151;
+    letter-spacing: 1px;
+}
+.suivi-header .subtitle {
+    color: #6b7280;
+    font-size: 1rem;
+    margin-top: 2px;
+}
+.suivi-header .btn-group a {
+    font-size: 1rem;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-right: 6px;
+}
+.suivi-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 22px;
+    margin-bottom: 32px;
+}
+.suivi-stat-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 22px 18px 18px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.suivi-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #fff;
+}
+.suivi-stat-details {
+    flex: 1;
+}
+.suivi-stat-details .stat-number {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #374151;
+}
+.suivi-stat-details .stat-label {
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+.suivi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(370px, 1fr));
+    gap: 28px;
+}
+.suivi-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 26px 24px 18px 24px;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+}
+.suivi-card:hover {
+    box-shadow: 0 8px 32px rgba(59,130,246,0.10);
+    transform: translateY(-3px) scale(1.01);
+}
+.suivi-card .suivi-info {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.suivi-avatar {
+    width: 54px;
+    height: 54px;
+    background: #e0e7ef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.07);
+}
+.suivi-badge {
+    display: inline-block;
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 8px;
+}
+.suivi-badge.validee { background: #e0f7ef; color: #059669; }
+.suivi-badge.soumise { background: #fef3c7; color: #d97706; }
+.suivi-badge.refusee { background: #fee2e2; color: #ef4444; }
+.suivi-badge.autre { background: #e0e7ef; color: #64748b; }
+.suivi-card .suivi-details {
+    flex: 1;
+}
+.suivi-card .suivi-details .type {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 1.13rem;
+}
+.suivi-card .suivi-details .famille {
+    font-size: 0.93rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+.suivi-card .suivi-details .date {
+    font-size: 0.82rem;
+    color: #9ca3af;
+}
+.suivi-card .suivi-description {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border-left: 3px solid #3b82f6;
+    color: #4b5563;
+    font-size: 0.93rem;
+    line-height: 1.5;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 {% csrf_token %}
-<div class="chart-container">
-    <div class="chart-header">
-        <div>
-            <div class="chart-title">SUIVI DES AIDES</div>
-            <div style="color: #6b7280; font-size: 0.9rem;">Gestion et suivi des demandes d'aide</div>
-        </div>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <!-- Filtres de statut -->
-            <div class="btn-group" role="group">
-                <a href="{% url 'suivi_aides' %}" class="btn {% if not statut_filtre %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm">
-                    <i class="fas fa-list"></i> Toutes
-                </a>
-                <a href="{% url 'suivi_aides' %}?statut=soumise" class="btn {% if statut_filtre == 'soumise' %}btn-warning{% else %}btn-outline-warning{% endif %} btn-sm">
-                    <i class="fas fa-clock"></i> En attente
-                </a>
-                <a href="{% url 'suivi_aides' %}?statut=validee" class="btn {% if statut_filtre == 'validee' %}btn-success{% else %}btn-outline-success{% endif %} btn-sm">
-                    <i class="fas fa-check"></i> Validées
-                </a>
-                <a href="{% url 'suivi_aides' %}?statut=refusee" class="btn {% if statut_filtre == 'refusee' %}btn-danger{% else %}btn-outline-danger{% endif %} btn-sm">
-                    <i class="fas fa-times"></i> Refusées
-                </a>
-            </div>
+<div class="suivi-header">
+    <div>
+        <div class="chart-title">SUIVI DES AIDES</div>
+        <div class="subtitle">Gestion et suivi des demandes d'aide</div>
+    </div>
+    <div class="btn-group" role="group">
+        <a href="{% url 'suivi_aides' %}" class="btn {% if not statut_filtre %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm">
+            <i class="fas fa-list"></i> Toutes
+        </a>
+        <a href="{% url 'suivi_aides' %}?statut=soumise" class="btn {% if statut_filtre == 'soumise' %}btn-warning{% else %}btn-outline-warning{% endif %} btn-sm">
+            <i class="fas fa-clock"></i> En attente
+        </a>
+        <a href="{% url 'suivi_aides' %}?statut=validee" class="btn {% if statut_filtre == 'validee' %}btn-success{% else %}btn-outline-success{% endif %} btn-sm">
+            <i class="fas fa-check"></i> Validées
+        </a>
+        <a href="{% url 'suivi_aides' %}?statut=refusee" class="btn {% if statut_filtre == 'refusee' %}btn-danger{% else %}btn-outline-danger{% endif %} btn-sm">
+            <i class="fas fa-times"></i> Refusées
+        </a>
+    </div>
+</div>
+<div class="suivi-stats">
+    <div class="suivi-stat-card">
+        <div class="suivi-stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);"><i class="fas fa-file-alt"></i></div>
+        <div class="suivi-stat-details">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">Total Demandes</div>
         </div>
     </div>
-
-    <!-- Statistiques rapides -->
-    <div style="margin-bottom: 30px;">
-        <div class="row">
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-content">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <div class="stat-details">
-                            <div class="stat-number">{{ stats.total }}</div>
-                            <div class="stat-label">Total Demandes</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-content">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #fbbf24, #d97706);">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-details">
-                            <div class="stat-number">{{ stats.en_attente }}</div>
-                            <div class="stat-label">En Attente</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-content">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        <div class="stat-details">
-                            <div class="stat-number">{{ stats.validees }}</div>
-                            <div class="stat-label">Validées</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-content">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                            <i class="fas fa-times"></i>
-                        </div>
-                        <div class="stat-details">
-                            <div class="stat-number">{{ stats.refusees }}</div>
-                            <div class="stat-label">Refusées</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="suivi-stat-card">
+        <div class="suivi-stat-icon" style="background: linear-gradient(135deg, #fbbf24, #d97706);"><i class="fas fa-clock"></i></div>
+        <div class="suivi-stat-details">
+            <div class="stat-number">{{ stats.en_attente }}</div>
+            <div class="stat-label">En Attente</div>
         </div>
     </div>
-
-    <!-- Liste des demandes -->
-    <div style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden;">
-        {% if demandes %}
-        <div style="max-height: 700px; overflow-y: auto;">
-            {% for demande in demandes %}
-            <div class="demande-item" style="display: flex; align-items: center; padding: 20px; border-bottom: 1px solid #f3f4f6; transition: all 0.3s ease; position: relative;">
-                <!-- Indicateur de statut -->
-                <div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px; position: relative;
-                    {% if demande.statut == 'validee' %}background: linear-gradient(135deg, #10b981, #059669);
-                    {% elif demande.statut == 'soumise' %}background: linear-gradient(135deg, #fbbf24, #d97706);
-                    {% elif demande.statut == 'refusee' %}background: linear-gradient(135deg, #ef4444, #dc2626);
-                    {% else %}background: linear-gradient(135deg, #64748b, #475569);{% endif %}">
+    <div class="suivi-stat-card">
+        <div class="suivi-stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fas fa-check"></i></div>
+        <div class="suivi-stat-details">
+            <div class="stat-number">{{ stats.validees }}</div>
+            <div class="stat-label">Validées</div>
+        </div>
+    </div>
+    <div class="suivi-stat-card">
+        <div class="suivi-stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><i class="fas fa-times"></i></div>
+        <div class="suivi-stat-details">
+            <div class="stat-number">{{ stats.refusees }}</div>
+            <div class="stat-label">Refusées</div>
+        </div>
+    </div>
+</div>
+<div class="suivi-grid">
+    {% if demandes %}
+        {% for demande in demandes %}
+        <div class="suivi-card" style="position: relative;">
+            <div class="suivi-info">
+                <div class="suivi-avatar" style="
+                    {% if demande.statut == 'validee' %}background: linear-gradient(135deg, #10b981, #059669); color: #fff;
+                    {% elif demande.statut == 'soumise' %}background: linear-gradient(135deg, #fbbf24, #d97706); color: #fff;
+                    {% elif demande.statut == 'refusee' %}background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff;
+                    {% else %}background: linear-gradient(135deg, #64748b, #475569); color: #fff;{% endif %}">
                     <i class="fas 
                         {% if demande.statut == 'validee' %}fa-check
                         {% elif demande.statut == 'soumise' %}fa-clock
                         {% elif demande.statut == 'refusee' %}fa-times
-                        {% else %}fa-question{% endif %}" 
-                        style="color: white; font-size: 1.2rem;"></i>
+                        {% else %}fa-question{% endif %}"></i>
                 </div>
-
-                <!-- Informations principales -->
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 10px;">
-                        <div>
-                            <h5 style="margin: 0; color: #1f2937; font-weight: 600; font-size: 1.1rem;">
-                                {{ demande.get_type_demande_display }}
-                            </h5>
-                            <div style="display: flex; align-items: center; gap: 15px; margin-top: 5px;">
-                                <span style="font-size: 0.9rem; color: #6b7280;">
-                                    <i class="fas fa-users" style="margin-right: 5px; color: #3b82f6;"></i>
-                                    Famille {{ demande.famille.nom_famille }}
-                                </span>
-                                {% if demande.famille.ville %}
-                                <span style="font-size: 0.9rem; color: #6b7280;">
-                                    <i class="fas fa-map-marker-alt" style="margin-right: 5px; color: #ef4444;"></i>
-                                    {{ demande.famille.ville }}
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Badge de statut -->
-                        <div style="text-align: right;">
-                            <span class="badge" style="padding: 8px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
-                                {% if demande.statut == 'validee' %}background: #10b98120; color: #10b981;
-                                {% elif demande.statut == 'soumise' %}background: #fbbf2420; color: #d97706;
-                                {% elif demande.statut == 'refusee' %}background: #ef444420; color: #ef4444;
-                                {% else %}background: #64748b20; color: #64748b;{% endif %}">
-                                {{ demande.get_statut_display }}
-                            </span>
-                        </div>
+                <div class="suivi-details">
+                    <div class="type">{{ demande.get_type_demande_display }}
+                        <span class="suivi-badge {% if demande.statut == 'validee' %}validee{% elif demande.statut == 'soumise' %}soumise{% elif demande.statut == 'refusee' %}refusee{% else %}autre{% endif %}" style="margin-left: 10px;">{{ demande.get_statut_display }}</span>
                     </div>
-
-                    <!-- Description si présente -->
-                    {% if demande.description %}
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #3b82f6;">
-                        <p style="margin: 0; color: #4b5563; font-size: 0.9rem; line-height: 1.5;">
-                            <i class="fas fa-quote-left" style="color: #3b82f6; margin-right: 8px; font-size: 0.8rem;"></i>
-                            {{ demande.description|truncatechars:120 }}
-                        </p>
+                    <div class="famille"><i class="fas fa-users" style="margin-right: 5px; color: #3b82f6;"></i>Famille {{ demande.famille.nom_famille }}
+                        {% if demande.famille.ville %}<span style="margin-left: 10px;"><i class="fas fa-map-marker-alt" style="margin-right: 5px; color: #ef4444;"></i>{{ demande.famille.ville }}</span>{% endif %}
                     </div>
-                    {% endif %}
-
-                    <!-- Informations temporelles et utilisateurs -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
-                        <div style="display: flex; align-items: center;">
-                            <i class="fas fa-calendar-plus" style="color: #3b82f6; margin-right: 8px;"></i>
-                            <div>
-                                <div style="font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; font-weight: 600;">Créée le</div>
-                                <div style="font-size: 0.9rem; color: #374151; font-weight: 500;">{{ demande.date_creation|date:"d/m/Y à H:i" }}</div>
-                            </div>
-                        </div>
-
-                        {% if demande.statut == 'validee' and demande.valide_par %}
-                        <div style="display: flex; align-items: center;">
-                            <i class="fas fa-user-check" style="color: #10b981; margin-right: 8px;"></i>
-                            <div>
-                                <div style="font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; font-weight: 600;">Validée par</div>
-                                <div style="font-size: 0.9rem; color: #374151; font-weight: 500;">
-                                    {{ demande.valide_par.first_name }} {{ demande.valide_par.last_name }}
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if demande.date_validation %}
-                        <div style="display: flex; align-items: center;">
-                            <i class="fas fa-calendar-check" style="color: #10b981; margin-right: 8px;"></i>
-                            <div>
-                                <div style="font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; font-weight: 600;">Validée le</div>
-                                <div style="font-size: 0.9rem; color: #374151; font-weight: 500;">{{ demande.date_validation|date:"d/m/Y à H:i" }}</div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Actions pour responsables/admins -->
-                    {% if user.role == 'responsable' or user.role == 'admin' %}
-                    {% if demande.statut == 'soumise' %}
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="validerDemande({{ demande.id }})" class="btn btn-success btn-sm">
-                                <i class="fas fa-check me-1"></i>Valider
-                            </button>
-                            <button onclick="refuserDemande({{ demande.id }})" class="btn btn-danger btn-sm">
-                                <i class="fas fa-times me-1"></i>Refuser
-                            </button>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% endif %}
+                    <div class="date">Créée le {{ demande.date_creation|date:"d/m/Y à H:i" }}</div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div style="text-align: center; padding: 60px; color: #6b7280;">
-            <i class="fas fa-hands-helping" style="font-size: 4rem; margin-bottom: 20px; color: #d1d5db;"></i>
-            <h3 style="color: #374151; margin-bottom: 10px;">
-                {% if statut_filtre %}
-                    Aucune demande {{ statut_filtre|capfirst }} trouvée
-                {% else %}
-                    Aucune demande d'aide enregistrée
-                {% endif %}
-            </h3>
-            <p style="font-size: 1.1rem;">
-                {% if statut_filtre %}
-                    Essayez de modifier le filtre de statut pour voir d'autres demandes.
-                {% else %}
-                    Les demandes d'aide apparaîtront ici une fois créées.
-                {% endif %}
-            </p>
-            {% if not statut_filtre %}
-            <a href="{% url 'demande_list' %}" class="btn btn-primary" style="margin-top: 20px;">
-                <i class="fas fa-plus me-2"></i>Créer une demande
-            </a>
+            {% if demande.description %}
+            <div class="suivi-description">
+                <i class="fas fa-quote-left" style="color: #3b82f6; margin-right: 8px; font-size: 0.8rem;"></i>
+                {{ demande.description|truncatechars:120 }}
+            </div>
+            {% endif %}
+            {% if user.role == 'responsable' or user.role == 'admin' %}
+            {% if demande.statut == 'soumise' %}
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px;">
+                <button onclick="validerDemande({{ demande.id }})" class="btn btn-success btn-sm" style="min-width: 110px; font-weight: 600;">
+                    <i class="fas fa-check me-1"></i>Valider
+                </button>
+                <button onclick="refuserDemande({{ demande.id }})" class="btn btn-danger btn-sm" style="min-width: 110px; font-weight: 600;">
+                    <i class="fas fa-times me-1"></i>Refuser
+                </button>
+            </div>
+            {% endif %}
             {% endif %}
         </div>
-        {% endif %}
-    </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 40px; color: #6b7280; grid-column: 1/-1;">
+            <i class="fas fa-hand-holding-heart" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
+            <p>Aucune demande d'aide enregistrée</p>
+        </div>
+    {% endif %}
 </div>
+
 
 <!-- CSS personnalisé -->
 <style>
