@@ -324,10 +324,10 @@
             <form class="login-form" method="post">
                 {% csrf_token %}
                 <label class="form-label" for="username">Nom d'utilisateur</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="gerald" required>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Nom d'utilisateur" required autocomplete="username">
                 <label class="form-label" for="password">Mot de passe</label>
                 <div style="position:relative;">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Mot de passe" required autocomplete="current-password">
                     <button type="button" class="password-toggle" onclick="togglePassword()"><i class="fas fa-eye"></i></button>
                 </div>
                 <button type="submit" class="login-btn">Se connecter</button>
