@@ -31,6 +31,28 @@
                 <div class="text-danger small mt-1">{{ form.prenom.errors.0 }}</div>
             {% endif %}
         </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-semibold text-gray-700">
+                <i class="fas fa-id-card me-2 text-primary"></i>Matricule
+            </label>
+            <input type="text" name="matricule" class="form-control elegant-input" 
+                   value="{{ form.matricule.value|default:'' }}" required placeholder="Matricule">
+            {% if form.matricule.errors %}
+                <div class="text-danger small mt-1">{{ form.matricule.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-semibold text-gray-700">
+                <i class="fas fa-id-card me-2 text-primary"></i>Matricule
+            </label>
+            <input type="text" name="matricule" class="form-control elegant-input" 
+                   value="{{ form.matricule.value|default:'' }}" required placeholder="Matricule">
+            {% if form.matricule.errors %}
+                <div class="text-danger small mt-1">{{ form.matricule.errors.0 }}</div>
+            {% endif %}
+        </div>
         
         <div class="col-md-6">
             <label class="form-label fw-semibold text-gray-700">

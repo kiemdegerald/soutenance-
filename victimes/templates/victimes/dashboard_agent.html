@@ -1,4 +1,3 @@
-
 {% extends 'victimes/base.html' %}
 {% load static %}
 
@@ -248,7 +247,45 @@
                         </div>
                     </div>
                     
-                    <div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                                <i class="fas fa-id-card" style="margin-right: 5px;"></i> Matricule *
+                            </label>
+                            <input type="text" name="matricule" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;" placeholder="Numéro de matricule" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                                <i class="fas fa-medal" style="margin-right: 5px;"></i> Grade
+                            </label>
+                            <select name="grade" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease; background: white;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                                <option value="">Sélectionner un grade</option>
+                                <option value="Soldat">Soldat</option>
+                                <option value="Caporal">Caporal</option>
+                                <option value="Sergent">Sergent</option>
+                                <option value="Adjudant">Adjudant</option>
+                                <option value="Major">Major</option>
+                                <option value="Sous-Lieutenant">Sous-Lieutenant</option>
+                                <option value="Lieutenant">Lieutenant</option>
+                                <option value="Capitaine">Capitaine</option>
+                                <option value="Commandant">Commandant</option>
+                                <option value="Lieutenant-Colonel">Lieutenant-Colonel</option>
+                                <option value="Colonel">Colonel</option>
+                                <option value="Général">Général</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations du décès -->
+                <div style="background: #fef3f2; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+                    <h4 style="color: #1f2937; margin: 0 0 20px 0; font-weight: 600; display: flex; align-items: center;">
+                        <i class="fas fa-calendar-times" style="margin-right: 10px; color: #dc2626;"></i>
+                        Informations du décès
+                    </h4>
+                    
+                    <div
                         <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
                             <i class="fas fa-medal" style="margin-right: 5px;"></i> Grade
                         </label>

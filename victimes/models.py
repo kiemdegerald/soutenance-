@@ -88,6 +88,7 @@ class FicheVictime(models.Model):
     # Informations personnelles
     nom = models.CharField(max_length=100, verbose_name="Nom")
     prenom = models.CharField(max_length=100, verbose_name="Prénom")
+    matricule = models.CharField(max_length=50, blank=True, default="", verbose_name="Matricule")
     date_naissance = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
     sexe = models.CharField(max_length=1, choices=SEXE_CHOICES, default='M', verbose_name="Sexe")
     nationalite = models.CharField(max_length=100, blank=True, verbose_name="Nationalité")

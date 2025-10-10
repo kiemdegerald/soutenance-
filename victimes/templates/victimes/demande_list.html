@@ -226,6 +226,83 @@
         font-size: 0.8rem;
         color: #9ca3af;
     }
+    
+    /* Style pour les tooltips personnalisés */
+    [data-tooltip]:hover {
+        position: relative !important;
+        z-index: auto !important;
+    }
+    
+    /* Force tous les éléments parents à ne pas créer de contexte de superposition */
+    .demande-assistant-card:has([data-tooltip]:hover) {
+        z-index: auto !important;
+        transform: none !important;
+        isolation: auto !important;
+    }
+    
+    .demande-assistant-meta[data-tooltip]:hover::after,
+    .demande-assistant-type[data-tooltip]:hover::after {
+        content: attr(data-tooltip);
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        background: white !important;
+        color: #1f2937 !important;
+        padding: 20px 25px !important;
+        border-radius: 15px !important;
+        font-size: 1rem !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        z-index: 2147483647 !important;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3), 0 15px 25px rgba(0, 0, 0, 0.2) !important;
+        animation: fadeInTooltip 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        min-width: 300px !important;
+        max-width: 500px !important;
+        width: max-content !important;
+        line-height: 1.7 !important;
+        text-align: left !important;
+        font-weight: 500 !important;
+        border: 2px solid #e5e7eb !important;
+        overflow: visible !important;
+        pointer-events: none !important;
+        backdrop-filter: blur(10px) !important;
+        isolation: isolate !important;
+    }
+    
+    /* Masque sombre derrière le tooltip */
+    .demande-assistant-meta[data-tooltip]:hover::before,
+    .demande-assistant-type[data-tooltip]:hover::before {
+        content: '' !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        z-index: 2147483646 !important;
+        pointer-events: none !important;
+        animation: fadeIn 0.3s ease !important;
+        isolation: isolate !important;
+    }
+    
+    @keyframes fadeInTooltip {
+        from { 
+            opacity: 0; 
+            transform: translate(-50%, -50%) scale(0.9); 
+            filter: blur(2px);
+        }
+        to { 
+            opacity: 1; 
+            transform: translate(-50%, -50%) scale(1); 
+            filter: blur(0);
+        }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
     </style>
     <div class="demande-assistant-grid">
         {% for demande in demandes %}
@@ -238,12 +315,12 @@
                 <i class="fas fa-hands-helping"></i>
             </div>
             <div class="demande-assistant-details">
-                <div class="demande-assistant-type">{{ demande.get_type_demande_display }}
+                <div class="demande-assistant-type" data-tooltip="Type de demande : {{ demande.get_type_demande_display }}">{{ demande.get_type_demande_display }}
                     <span class="demande-assistant-badge {% if demande.statut == 'validee' %}validee{% elif demande.statut == 'soumise' %}soumise{% elif demande.statut == 'refusee' %}refusee{% else %}autre{% endif %}">{{ demande.get_statut_display }}</span>
                 </div>
-                <div class="demande-assistant-meta"><i class="fas fa-users" style="margin-right: 4px; color: #3b82f6;"></i>Famille {{ demande.famille.nom_famille }}{% if demande.famille.ville %} <span style="margin-left: 8px;"><i class="fas fa-map-marker-alt" style="margin-right: 3px; color: #ef4444;"></i>{{ demande.famille.ville }}</span>{% endif %}</div>
+                <div class="demande-assistant-meta" data-tooltip="Famille : {{ demande.famille.nom_famille }}{% if demande.famille.ville %} - Ville : {{ demande.famille.ville }}{% endif %}" style="cursor: help;"><i class="fas fa-users" style="margin-right: 4px; color: #3b82f6;"></i>Famille {{ demande.famille.nom_famille }}{% if demande.famille.ville %} <span style="margin-left: 8px;"><i class="fas fa-map-marker-alt" style="margin-right: 3px; color: #ef4444;"></i>{{ demande.famille.ville }}</span>{% endif %}</div>
                 {% if demande.description %}
-                <div class="demande-assistant-meta"><i class="fas fa-quote-left" style="color: #3b82f6; margin-right: 6px; font-size: 0.8rem;"></i>{{ demande.description|truncatechars:60 }}</div>
+                <div class="demande-assistant-meta" data-tooltip="{{ demande.description }}" style="cursor: help;"><i class="fas fa-quote-left" style="color: #3b82f6; margin-right: 6px; font-size: 0.8rem;"></i>{{ demande.description|truncatechars:60 }}</div>
                 {% endif %}
                 {% if demande.cree_par %}
                 <div class="demande-assistant-date">Créée par : {{ demande.cree_par.username }} | {{ demande.date_creation|date:"d/m/Y" }}</div>
