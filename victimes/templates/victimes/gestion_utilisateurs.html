@@ -158,16 +158,8 @@
                         onmouseout="this.style.backgroundColor='white';">
                         <td style="padding: 15px;">
                             <div style="display: flex; align-items: center;">
-                                <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;
-                                    {% if user.role == 'admin' %}background: linear-gradient(135deg, #ef4444, #dc2626);
-                                    {% elif user.role == 'responsable' %}background: linear-gradient(135deg, #10b981, #059669);
-                                    {% elif user.role == 'assistant' %}background: linear-gradient(135deg, #f59e0b, #d97706);
-                                    {% else %}background: linear-gradient(135deg, #3b82f6, #1d4ed8);{% endif %} color: white;">
-                                    <i class="fas 
-                                        {% if user.role == 'admin' %}fa-user-shield
-                                        {% elif user.role == 'responsable' %}fa-user-cog
-                                        {% elif user.role == 'assistant' %}fa-hands-helping
-                                        {% else %}fa-user{% endif %}" style="font-size: 1.2rem;"></i>
+                                <div class="user-avatar {{ user.role }}">
+                                    <i class="fas {% if user.role == 'admin' %}fa-user-shield{% elif user.role == 'responsable' %}fa-user-cog{% elif user.role == 'assistant' %}fa-hands-helping{% else %}fa-user{% endif %}" style="font-size: 1.2rem;"></i>
                                 </div>
                                 <div>
                                     <div style="font-weight: 600; color: #1f2937; font-size: 0.95rem;">
@@ -183,11 +175,7 @@
                             </div>
                         </td>
                         <td style="padding: 15px;">
-                            <span style="padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
-                                {% if user.role == 'admin' %}background: #ef444420; color: #ef4444;
-                                {% elif user.role == 'responsable' %}background: #10b98120; color: #10b981;
-                                {% elif user.role == 'assistant' %}background: #f59e0b20; color: #f59e0b;
-                                {% else %}background: #3b82f620; color: #3b82f6;{% endif %}">
+                            <span class="user-role-badge {{ user.role }}">
                                 {{ user.get_role_display }}
                             </span>
                         </td>
@@ -230,14 +218,7 @@
                         <td style="padding: 15px; text-align: center;">
                             {% if user != request.user %}
                                 <button onclick="toggleUserStatus({{ user.id }}, '{{ user.is_active|yesno:"false,true" }}')"
-                                        style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.3s ease;
-                                            {% if user.is_active %}
-                                                background: linear-gradient(135deg, #ef4444, #dc2626); color: white;
-                                            {% else %}
-                                                background: linear-gradient(135deg, #10b981, #059669); color: white;
-                                            {% endif %}"
-                                        onmouseover="this.style.transform='scale(1.05)';"
-                                        onmouseout="this.style.transform='scale(1)';">
+                                        class="btn-toggle-status {% if user.is_active %}btn-deactivate{% else %}btn-activate{% endif %}">
                                     {% if user.is_active %}
                                         <i class="fas fa-user-times" style="margin-right: 6px;"></i>Désactiver
                                     {% else %}
@@ -314,6 +295,86 @@
     color: #6b7280;
     font-weight: 500;
     margin-top: 3px;
+}
+
+/* Styles pour les avatars selon le rôle */
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    color: white;
+}
+
+.user-avatar.admin {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.user-avatar.responsable {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.user-avatar.assistant {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.user-avatar.agent {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+/* Styles pour les badges de rôle */
+.user-role-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.user-role-badge.admin {
+    background: #ef444420;
+    color: #ef4444;
+}
+
+.user-role-badge.responsable {
+    background: #10b98120;
+    color: #10b981;
+}
+
+.user-role-badge.assistant {
+    background: #f59e0b20;
+    color: #f59e0b;
+}
+
+.user-role-badge.agent {
+    background: #3b82f620;
+    color: #3b82f6;
+}
+
+/* Styles pour les boutons de toggle */
+.btn-toggle-status {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.btn-toggle-status:hover {
+    transform: scale(1.05);
+}
+
+.btn-deactivate {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.btn-activate {
+    background: linear-gradient(135deg, #10b981, #059669);
 }
 </style>
 

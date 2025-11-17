@@ -369,14 +369,8 @@
                 <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                     <i class="fas fa-tachometer-alt"></i> Tableau de Bord
                 </a></li>
-                <li><a href="{% url 'victime_create' %}" class="{% if 'victime' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="fas fa-user-plus"></i> Nouvelle Fiche Victime
-                </a></li>
                 <li><a href="{% url 'victime_list' %}" class="{% if 'victime' in request.resolver_match.url_name %}active{% endif %}">
                     <i class="fas fa-file-medical"></i> Mes Fiches Victimes
-                </a></li>
-                <li><a href="{% url 'famille_list' %}" class="{% if 'famille' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="fas fa-users"></i> Familles Enregistrées
                 </a></li>
                 <li><a href="#" class="">
                     <i class="fas fa-search"></i> Recherche Avancée
@@ -392,14 +386,8 @@
                 <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a></li>
-                <li><a href="{% url 'demande_create' %}" class="{% if 'demande' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="fas fa-plus-circle"></i> Nouvelle Demande
-                </a></li>
                 <li><a href="{% url 'demande_list' %}" class="{% if 'demande' in request.resolver_match.url_name %}active{% endif %}">
                     <i class="fas fa-hand-holding-heart"></i> Demandes d'Aide
-                </a></li>
-                <li><a href="{% url 'famille_list' %}" class="{% if 'famille' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="fas fa-users"></i> Familles
                 </a></li>
                 <li><a href="{% url 'suivi_aides' %}" class="{% if request.resolver_match.url_name == 'suivi_aides' %}active{% endif %}">
                     <i class="fas fa-chart-line"></i> Suivi des Aides
@@ -409,17 +397,11 @@
                 <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a></li>
-                <li><a href="{% url 'famille_list' %}" class="{% if 'famille' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="fas fa-users"></i> Familles
-                </a></li>
                 <li><a href="{% url 'victime_list' %}" class="{% if 'victime' in request.resolver_match.url_name %}active{% endif %}">
                     <i class="fas fa-file-medical"></i> Fiches Victimes
                 </a></li>
                 <li><a href="{% url 'demande_list' %}" class="{% if 'demande' in request.resolver_match.url_name %}active{% endif %}">
                     <i class="fas fa-hand-holding-heart"></i> Demandes d'Aide
-                </a></li>
-                <li><a href="{% url 'demandes_a_valider' %}" class="{% if 'validation' in request.resolver_match.url_name %}active{% endif %}">
-                    <i class="fas fa-check-circle"></i> Validation Demandes
                 </a></li>
                 <li><a href="{% url 'suivi_aides' %}" class="{% if request.resolver_match.url_name == 'suivi_aides' %}active{% endif %}">
                     <i class="fas fa-chart-line"></i> Suivi des Aides

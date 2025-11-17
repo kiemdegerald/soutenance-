@@ -191,16 +191,8 @@
                     {% if activites_systeme %}
                         {% for action in activites_systeme %}
                         <div style="display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f3f4f6;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;
-                                {% if action.utilisateur.role == 'admin' %}background: #ef444420; color: #ef4444;
-                                {% elif action.utilisateur.role == 'responsable' %}background: #10b98120; color: #10b981;
-                                {% elif action.utilisateur.role == 'assistant' %}background: #f59e0b20; color: #f59e0b;
-                                {% else %}background: #3b82f620; color: #3b82f6;{% endif %}">
-                                <i class="fas 
-                                    {% if action.utilisateur.role == 'admin' %}fa-user-shield
-                                    {% elif action.utilisateur.role == 'responsable' %}fa-user-cog
-                                    {% elif action.utilisateur.role == 'assistant' %}fa-hands-helping
-                                    {% else %}fa-user{% endif %}"></i>
+                            <div class="user-ranking-avatar {{ action.utilisateur.role }}" style="width: 40px; height: 40px; margin: 0 15px 0 0;">
+                                <i class="fas {% if action.utilisateur.role == 'admin' %}fa-user-shield{% elif action.utilisateur.role == 'responsable' %}fa-user-cog{% elif action.utilisateur.role == 'assistant' %}fa-hands-helping{% else %}fa-user{% endif %}"></i>
                             </div>
                             <div style="flex: 1;">
                                 <div style="font-weight: 500; color: #1f2937; font-size: 0.95rem;">{{ action.action }}</div>
@@ -244,21 +236,9 @@
                 <div class="row">
                     {% for utilisateur in utilisateurs_actifs_stats %}
                     <div class="col-md-{{ forloop.counter|add:1 }}">
-                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; border: 2px solid 
-                            {% if forloop.counter == 1 %}#fbbf24
-                            {% elif forloop.counter == 2 %}#94a3b8
-                            {% elif forloop.counter == 3 %}#cd7c2f
-                            {% else %}#e5e7eb{% endif %};">
-                            <div style="width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;
-                                {% if utilisateur.role == 'admin' %}background: linear-gradient(135deg, #ef4444, #dc2626);
-                                {% elif utilisateur.role == 'responsable' %}background: linear-gradient(135deg, #10b981, #059669);
-                                {% elif utilisateur.role == 'assistant' %}background: linear-gradient(135deg, #f59e0b, #d97706);
-                                {% else %}background: linear-gradient(135deg, #3b82f6, #1d4ed8);{% endif %} color: white;">
-                                <i class="fas 
-                                    {% if utilisateur.role == 'admin' %}fa-user-shield
-                                    {% elif utilisateur.role == 'responsable' %}fa-user-cog
-                                    {% elif utilisateur.role == 'assistant' %}fa-hands-helping
-                                    {% else %}fa-user{% endif %}" style="font-size: 1.5rem;"></i>
+                        <div class="user-ranking-card {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-other{% endif %}">
+                            <div class="user-ranking-avatar {{ utilisateur.role }}">
+                                <i class="fas {% if utilisateur.role == 'admin' %}fa-user-shield{% elif utilisateur.role == 'responsable' %}fa-user-cog{% elif utilisateur.role == 'assistant' %}fa-hands-helping{% else %}fa-user{% endif %}" style="font-size: 1.5rem;"></i>
                             </div>
                             <h5 style="margin: 0 0 5px 0; color: #1f2937;">{{ utilisateur.first_name }} {{ utilisateur.last_name }}</h5>
                             <div style="font-size: 0.8rem; color: #6b7280; margin-bottom: 10px;">{{ utilisateur.get_role_display }}</div>
@@ -409,6 +389,60 @@
     color: #1f2937;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* Styles pour les cartes utilisateurs avec classement */
+.user-ranking-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    text-align: center;
+    border: 2px solid;
+}
+
+.user-ranking-card.rank-1 {
+    border-color: #fbbf24;
+}
+
+.user-ranking-card.rank-2 {
+    border-color: #94a3b8;
+}
+
+.user-ranking-card.rank-3 {
+    border-color: #cd7c2f;
+}
+
+.user-ranking-card.rank-other {
+    border-color: #e5e7eb;
+}
+
+/* Avatar utilisateur dans les classements */
+.user-ranking-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.user-ranking-avatar.admin {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.user-ranking-avatar.responsable {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.user-ranking-avatar.assistant {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.user-ranking-avatar.agent {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
 </style>
 {% endblock %}

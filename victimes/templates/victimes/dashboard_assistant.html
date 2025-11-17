@@ -112,7 +112,11 @@
                                 <span style="font-size: 0.9rem; font-weight: 600; color: #10b981;">{{ demandes_validees }}</span>
                             </div>
                             <div style="background: #f3f4f6; height: 8px; border-radius: 4px; overflow: hidden;">
-                                <div style="background: #10b981; height: 100%; width: {% if mes_demandes > 0 %}{{ demandes_validees|floatformat:0 }}/{{ mes_demandes }} * 100{% else %}0{% endif %}%; border-radius: 4px;"></div>
+                                {% if mes_demandes > 0 %}
+                                <div style="background: #10b981; height: 100%; width: {% widthratio demandes_validees mes_demandes 100 %}%; border-radius: 4px;"></div>
+                                {% else %}
+                                <div style="background: #10b981; height: 100%; width: 0%; border-radius: 4px;"></div>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -122,7 +126,11 @@
                                 <span style="font-size: 0.9rem; font-weight: 600; color: #f59e0b;">{{ demandes_en_attente }}</span>
                             </div>
                             <div style="background: #f3f4f6; height: 8px; border-radius: 4px; overflow: hidden;">
-                                <div style="background: #f59e0b; height: 100%; width: {% if mes_demandes > 0 %}{{ demandes_en_attente|floatformat:0 }}/{{ mes_demandes }} * 100{% else %}0{% endif %}%; border-radius: 4px;"></div>
+                                {% if mes_demandes > 0 %}
+                                <div style="background: #f59e0b; height: 100%; width: {% widthratio demandes_en_attente mes_demandes 100 %}%; border-radius: 4px;"></div>
+                                {% else %}
+                                <div style="background: #f59e0b; height: 100%; width: 0%; border-radius: 4px;"></div>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -133,7 +141,11 @@
                                 <span style="font-size: 0.9rem; font-weight: 600; color: #ef4444;">{{ demandes_refusees }}</span>
                             </div>
                             <div style="background: #f3f4f6; height: 8px; border-radius: 4px; overflow: hidden;">
-                                <div style="background: #ef4444; height: 100%; width: {% if mes_demandes > 0 %}{{ demandes_refusees|floatformat:0 }}/{{ mes_demandes }} * 100{% else %}0{% endif %}%; border-radius: 4px;"></div>
+                                {% if mes_demandes > 0 %}
+                                <div style="background: #ef4444; height: 100%; width: {% widthratio demandes_refusees mes_demandes 100 %}%; border-radius: 4px;"></div>
+                                {% else %}
+                                <div style="background: #ef4444; height: 100%; width: 0%; border-radius: 4px;"></div>
+                                {% endif %}
                             </div>
                         </div>
                         {% endif %}
@@ -161,16 +173,8 @@
                     {% if demandes_recentes %}
                         {% for demande in demandes_recentes %}
                         <div style="display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f3f4f6;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;
-                                {% if demande.statut == 'validee' %}background: #10b98120; color: #10b981;
-                                {% elif demande.statut == 'soumise' %}background: #fbbf2420; color: #f59e0b;
-                                {% elif demande.statut == 'refusee' %}background: #ef444420; color: #ef4444;
-                                {% else %}background: #64748b20; color: #64748b;{% endif %}">
-                                <i class="fas 
-                                    {% if demande.statut == 'validee' %}fa-check
-                                    {% elif demande.statut == 'soumise' %}fa-clock
-                                    {% elif demande.statut == 'refusee' %}fa-times
-                                    {% else %}fa-question{% endif %}"></i>
+                            <div class="demande-status-icon {% if demande.statut == 'validee' %}validee{% elif demande.statut == 'soumise' %}soumise{% elif demande.statut == 'refusee' %}refusee{% else %}autre{% endif %}">
+                                <i class="fas {% if demande.statut == 'validee' %}fa-check{% elif demande.statut == 'soumise' %}fa-clock{% elif demande.statut == 'refusee' %}fa-times{% else %}fa-question{% endif %}"></i>
                             </div>
                             <div style="flex: 1;">
                                 <div style="font-weight: 500; color: #1f2937; font-size: 0.95rem;">{{ demande.get_type_demande_display }}</div>
@@ -183,11 +187,7 @@
                                 </div>
                             </div>
                             <div style="text-align: right;">
-                                <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500;
-                                    {% if demande.statut == 'validee' %}background: #10b98120; color: #10b981;
-                                    {% elif demande.statut == 'soumise' %}background: #fbbf2420; color: #f59e0b;
-                                    {% elif demande.statut == 'refusee' %}background: #ef444420; color: #ef4444;
-                                    {% else %}background: #64748b20; color: #64748b;{% endif %}">
+                                <span class="demande-status-badge {% if demande.statut == 'validee' %}validee{% elif demande.statut == 'soumise' %}soumise{% elif demande.statut == 'refusee' %}refusee{% else %}autre{% endif %}">
                                     {{ demande.get_statut_display }}
                                 </span>
                             </div>
@@ -333,6 +333,65 @@
     color: #1f2937;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* Styles pour les icônes de statut de demande */
+.demande-status-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.demande-status-icon.validee {
+    background: #10b98120;
+    color: #10b981;
+}
+
+.demande-status-icon.soumise {
+    background: #fbbf2420;
+    color: #f59e0b;
+}
+
+.demande-status-icon.refusee {
+    background: #ef444420;
+    color: #ef4444;
+}
+
+.demande-status-icon.autre {
+    background: #64748b20;
+    color: #64748b;
+}
+
+/* Styles pour les badges de statut */
+.demande-status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.demande-status-badge.validee {
+    background: #10b98120;
+    color: #10b981;
+}
+
+.demande-status-badge.soumise {
+    background: #fbbf2420;
+    color: #f59e0b;
+}
+
+.demande-status-badge.refusee {
+    background: #ef444420;
+    color: #ef4444;
+}
+
+.demande-status-badge.autre {
+    background: #64748b20;
+    color: #64748b;
 }
 </style>
 {% endblock %}

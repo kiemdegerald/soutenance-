@@ -1,0 +1,29 @@
+<div class="modal-content" style="padding: 32px; border-radius: 18px; background: #fff; box-shadow: 0 8px 32px rgba(59,130,246,0.10); max-width: 700px; margin: auto;">
+    <h3 style="font-weight: 700; color: #23235b; margin-bottom: 18px;">Informations sur la victime</h3>
+    {% for victime in victimes %}
+    <div style="background: #f8fafc; border-radius: 12px; padding: 18px 24px; margin-bottom: 18px; box-shadow: 0 2px 8px #6366f122;">
+        <h4 style="font-weight: 600; color: #2563eb; margin-bottom: 10px;">Informations personnelles</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+            <div><b>Nom :</b> {{ victime.nom }}</div>
+            <div><b>Prénom :</b> {{ victime.prenom }}</div>
+            <div><b>Matricule :</b> {{ victime.matricule }}</div>
+            <div><b>Grade :</b> {{ victime.grade }}</div>
+            <div><b>Date de décès :</b> {{ victime.date_deces|date:'d/m/Y' }}</div>
+            <div><b>Lieu de décès :</b> {{ victime.lieu_deces }}</div>
+        </div>
+        <hr>
+        <h4 style="font-weight: 600; color: #374151; margin-bottom: 10px;">Famille</h4>
+        <div><b>Nom de famille :</b> {{ famille.nom_famille }}</div>
+        <div><b>Ville :</b> {{ famille.ville }}</div>
+        <div><b>Adresse :</b> {{ famille.adresse }}</div>
+    </div>
+    {% endfor %}
+    <h4 style="font-weight: 600; color: #374151; margin-bottom: 10px;">Membres de la famille</h4>
+    <ul>
+        {% for membre in membres %}
+        <li>{{ membre.prenom }} {{ membre.nom }} ({{ membre.get_relation_victime_display }})</li>
+        {% empty %}
+        <li>Aucun membre enregistré.</li>
+        {% endfor %}
+    </ul>
+</div>

@@ -142,16 +142,8 @@
                  onmouseout="this.style.backgroundColor='white';">
                 
                 <!-- Avatar utilisateur avec rôle -->
-                <div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px; flex-shrink: 0;
-                    {% if action.utilisateur.role == 'admin' %}background: linear-gradient(135deg, #ef4444, #dc2626);
-                    {% elif action.utilisateur.role == 'responsable' %}background: linear-gradient(135deg, #10b981, #059669);
-                    {% elif action.utilisateur.role == 'assistant' %}background: linear-gradient(135deg, #f59e0b, #d97706);
-                    {% else %}background: linear-gradient(135deg, #3b82f6, #1d4ed8);{% endif %} color: white;">
-                    <i class="fas 
-                        {% if action.utilisateur.role == 'admin' %}fa-user-shield
-                        {% elif action.utilisateur.role == 'responsable' %}fa-user-cog
-                        {% elif action.utilisateur.role == 'assistant' %}fa-hands-helping
-                        {% else %}fa-user{% endif %}" style="font-size: 1.2rem;"></i>
+                <div class="avatar-role {{ action.utilisateur.role }}">
+                    <i class="fas {% if action.utilisateur.role == 'admin' %}fa-user-shield{% elif action.utilisateur.role == 'responsable' %}fa-user-cog{% elif action.utilisateur.role == 'assistant' %}fa-hands-helping{% else %}fa-user{% endif %}" style="font-size: 1.2rem;"></i>
                 </div>
 
                 <!-- Contenu de l'action -->
@@ -164,12 +156,7 @@
                             </h4>
                             <div style="font-size: 0.85rem; color: #6b7280; margin-top: 3px;">
                                 <strong style="color: #1f2937;">{{ action.utilisateur.first_name }} {{ action.utilisateur.last_name }}</strong>
-                                <span style="padding: 2px 8px; background: 
-                                    {% if action.utilisateur.role == 'admin' %}#ef444420; color: #ef4444;
-                                    {% elif action.utilisateur.role == 'responsable' %}#10b98120; color: #10b981;
-                                    {% elif action.utilisateur.role == 'assistant' %}#f59e0b20; color: #f59e0b;
-                                    {% else %}#3b82f620; color: #3b82f6;{% endif %}
-                                    border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-left: 8px;">
+                                <span class="role-badge {{ action.utilisateur.role }}">
                                     {{ action.utilisateur.get_role_display }}
                                 </span>
                             </div>
@@ -186,11 +173,7 @@
 
                     <!-- Détails de l'action -->
                     {% if action.details %}
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 10px; border-left: 3px solid 
-                        {% if action.utilisateur.role == 'admin' %}#ef4444;
-                        {% elif action.utilisateur.role == 'responsable' %}#10b981;
-                        {% elif action.utilisateur.role == 'assistant' %}#f59e0b;
-                        {% else %}#3b82f6;{% endif %}">
+                    <div class="details-box {{ action.utilisateur.role }}">
                         <div style="font-size: 0.9rem; color: #4b5563; line-height: 1.5;">
                             {{ action.details }}
                         </div>
@@ -311,6 +294,89 @@
     color: #6b7280;
     font-weight: 500;
     margin-top: 3px;
+}
+
+/* Styles pour les avatars selon le rôle */
+.avatar-role {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    flex-shrink: 0;
+    color: white;
+}
+
+.avatar-role.admin {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.avatar-role.responsable {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.avatar-role.assistant {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.avatar-role.agent {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+/* Styles pour les badges de rôle */
+.role-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.role-badge.admin {
+    background: #ef444420;
+    color: #ef4444;
+}
+
+.role-badge.responsable {
+    background: #10b98120;
+    color: #10b981;
+}
+
+.role-badge.assistant {
+    background: #f59e0b20;
+    color: #f59e0b;
+}
+
+.role-badge.agent {
+    background: #3b82f620;
+    color: #3b82f6;
+}
+
+/* Bordure gauche pour les détails */
+.details-box {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 10px;
+    border-left: 3px solid;
+}
+
+.details-box.admin {
+    border-left-color: #ef4444;
+}
+
+.details-box.responsable {
+    border-left-color: #10b981;
+}
+
+.details-box.assistant {
+    border-left-color: #f59e0b;
+}
+
+.details-box.agent {
+    border-left-color: #3b82f6;
 }
 </style>
 {% endblock %}

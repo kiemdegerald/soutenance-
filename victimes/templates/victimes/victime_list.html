@@ -141,9 +141,6 @@
         <div class="chart-title">FICHES VICTIMES</div>
         <div class="subtitle">Gestion des fiches victimes</div>
     </div>
-    <a href="{% url 'victime_create' %}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Nouvelle Fiche
-    </a>
 </div>
 <div class="victime-grid">
     {% for victime in victimes %}
@@ -182,9 +179,6 @@
     <div style="text-align: center; padding: 40px; color: #6b7280; grid-column: 1/-1;">
         <i class="fas fa-user-injured" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
         <p>Aucune fiche victime enregistrée</p>
-        <a href="{% url 'victime_create' %}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Créer la première fiche
-        </a>
     </div>
     {% endfor %}
 </div>
