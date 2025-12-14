@@ -25,7 +25,7 @@ class MembreFamilleForm(forms.ModelForm):
 class FicheVictimeForm(forms.ModelForm):
     class Meta:
         model = FicheVictime
-        fields = ['nom', 'prenom', 'matricule', 'grade', 'date_deces', 'lieu_deces', 'acte_deces', 'statut_victime']
+        fields = ['nom', 'prenom', 'matricule', 'photo', 'grade', 'date_deces', 'lieu_deces', 'acte_deces', 'statut_victime']
         widgets = {
             'nom': forms.TextInput(attrs={'class': 'form-control'}),
             'prenom': forms.TextInput(attrs={'class': 'form-control'}),

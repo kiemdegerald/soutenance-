@@ -166,13 +166,31 @@ def famille_delete(request, pk):
 # FicheVictime CRUD
 @role_required(['agent', 'assistant', 'responsable', 'admin'])
 def victime_list(request):
+    # Récupération du paramètre de recherche
+    search_query = request.GET.get('search', '').strip()
+    
     if request.user.role == 'agent':
         # Les agents ne voient que leurs propres fiches victimes
-        victimes = FicheVictime.objects.filter(cree_par=request.user).order_by('-date_creation')
+        victimes = FicheVictime.objects.filter(cree_par=request.user)
     else:
         # Les assistants, responsables et admins voient toutes les fiches
-        victimes = FicheVictime.objects.all().order_by('-date_creation')
-    return render(request, 'victimes/victime_list.html', {'victimes': victimes})
+        victimes = FicheVictime.objects.all()
+    
+    # Appliquer le filtre de recherche si présent
+    if search_query:
+        victimes = victimes.filter(
+            Q(matricule__icontains=search_query) |
+            Q(nom__icontains=search_query) |
+            Q(prenom__icontains=search_query)
+        )
+    
+    victimes = victimes.order_by('-date_creation')
+    
+    context = {
+        'victimes': victimes,
+        'search_query': search_query,
+    }
+    return render(request, 'victimes/victime_list.html', context)
 
 @login_required  # Temporairement, on utilise juste login_required pour tester
 @login_required
@@ -496,10 +514,14 @@ def dashboard_view(request):
         mes_familles = Famille.objects.filter(victimes__cree_par=request.user).distinct().count()
         mes_activites = JournalAction.objects.filter(utilisateur=request.user).order_by('-date_action')[:5]
         
+        # Dernières victimes avec photos
+        dernieres_victimes = FicheVictime.objects.filter(cree_par=request.user, photo__isnull=False).exclude(photo='').order_by('-date_creation')[:5]
+        
         context = {
             'mes_fiches': mes_fiches,
             'mes_familles': mes_familles,
             'mes_activites': mes_activites,
+            'dernieres_victimes': dernieres_victimes,
             'en_attente': 3,  # Exemple
             'taux_completion': 94,  # Exemple
         }

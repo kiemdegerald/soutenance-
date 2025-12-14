@@ -94,6 +94,7 @@ class FicheVictime(models.Model):
     nom = models.CharField(max_length=100, verbose_name="Nom")
     prenom = models.CharField(max_length=100, verbose_name="Prénom")
     matricule = models.CharField(max_length=50, unique=True, verbose_name="INCO")
+    photo = models.ImageField(upload_to="photos_victimes/", blank=True, null=True, verbose_name="Photo")
     statut_victime = models.CharField(max_length=20, choices=STATUT_VICTIME_CHOICES, default='decede', verbose_name="Statut de la victime")
     date_naissance = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
     sexe = models.CharField(max_length=1, choices=SEXE_CHOICES, default='M', verbose_name="Sexe")

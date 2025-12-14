@@ -24,6 +24,12 @@
     padding: 24px 32px 18px 32px;
     margin-bottom: 30px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    flex-wrap: wrap;
+    gap: 20px;
+}
+.victime-header .header-left {
+    flex: 1;
+    min-width: 250px;
 }
 .victime-header .chart-title {
     font-size: 1.5rem;
@@ -43,6 +49,51 @@
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(59,130,246,0.08);
 }
+.search-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    min-width: 300px;
+}
+.search-form input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    background: transparent;
+}
+.search-form input::placeholder {
+    color: #9ca3af;
+}
+.search-form button {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s;
+}
+.search-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+.search-form .clear-btn {
+    background: #ef4444;
+    padding: 8px 12px;
+}
+.search-form .clear-btn:hover {
+    background: #dc2626;
+}
 .victime-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -61,6 +112,107 @@
 .victime-card:hover {
     box-shadow: 0 8px 32px rgba(59,130,246,0.10);
     transform: translateY(-3px) scale(1.01);
+}
+.victime-photo {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: #e0e7ef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.victime-photo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+.victime-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.victime-photo i {
+    font-size: 2rem;
+    color: #9ca3af;
+}
+/* Modal Photo */
+#photoModal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    animation: fadeIn 0.3s;
+}
+#photoModal .modal-content-photo {
+    margin: 5% auto;
+    display: block;
+    max-width: 90%;
+    max-height: 80%;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: zoomIn 0.3s;
+}
+@keyframes zoomIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+#photoModal .close-photo {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #fff;
+    font-size: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+#photoModal .close-photo:hover {
+    color: #f87171;
+}
+#photoModal .download-photo {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(59,130,246,0.4);
+    transition: all 0.3s;
+}
+#photoModal .download-photo:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59,130,246,0.6);
+}
+#photoModal .photo-info {
+    position: absolute;
+    top: 20px;
+    left: 35px;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 .victime-card .victime-info {
     display: flex;
@@ -137,14 +289,46 @@
 {% block content %}
 {% csrf_token %}
 <div class="victime-header">
-    <div>
+    <div class="header-left">
         <div class="chart-title">FICHES VICTIMES</div>
         <div class="subtitle">Gestion des fiches victimes</div>
     </div>
+    
+    <!-- Formulaire de recherche -->
+    <form method="GET" action="{% url 'victime_list' %}" class="search-form">
+        <i class="fas fa-search" style="color: #6b7280;"></i>
+        <input type="text" name="search" placeholder="Rechercher par INCO, nom ou prénom..." value="{{ search_query|default:'' }}">
+        <button type="submit">
+            <i class="fas fa-search"></i>
+            Rechercher
+        </button>
+        {% if search_query %}
+        <a href="{% url 'victime_list' %}" class="clear-btn" style="text-decoration: none; color: white; display: flex; align-items: center; padding: 8px 12px; background: #ef4444; border-radius: 8px; font-weight: 600;">
+            <i class="fas fa-times"></i>
+        </a>
+        {% endif %}
+    </form>
 </div>
+
+{% if search_query %}
+<div style="background: #e0f2fe; border-left: 4px solid #3b82f6; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px;">
+    <i class="fas fa-info-circle" style="color: #3b82f6; margin-right: 8px;"></i>
+    <strong>{{ victimes|length }}</strong> résultat(s) trouvé(s) pour "<strong>{{ search_query }}</strong>"
+</div>
+{% endif %}
+
 <div class="victime-grid">
     {% for victime in victimes %}
     <div class="victime-card">
+        <!-- Photo en haut à droite -->
+        <div class="victime-photo" {% if victime.photo %}onclick="openPhotoModal('{{ victime.photo.url }}', '{{ victime.prenom }} {{ victime.nom }}')"{% endif %}>
+            {% if victime.photo %}
+                <img src="{{ victime.photo.url }}" alt="{{ victime.prenom }} {{ victime.nom }}">
+            {% else %}
+                <i class="fas fa-user"></i>
+            {% endif %}
+        </div>
+        
         <div class="victime-info">
             <div class="victime-avatar">
                 <i class="fas fa-user"></i>
@@ -491,6 +675,17 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Modal pour afficher la photo en grand -->
+<div id="photoModal">
+    <span class="close-photo" onclick="closePhotoModal()">&times;</span>
+    <div class="photo-info" id="photoInfo"></div>
+    <img class="modal-content-photo" id="modalPhoto">
+    <button class="download-photo" onclick="downloadPhoto()">
+        <i class="fas fa-download"></i>
+        Télécharger la photo
+    </button>
 </div>
 
 {% endblock %}
@@ -1067,6 +1262,7 @@ document.getElementById('membresForm').addEventListener('submit', function(e) {
 window.onclick = function(event) {
     const familleModal = document.getElementById('familleModal');
     const membresModal = document.getElementById('membresModal');
+    const photoModal = document.getElementById('photoModal');
     
     if (event.target === familleModal) {
         closeFamilleModal();
@@ -1074,6 +1270,60 @@ window.onclick = function(event) {
     if (event.target === membresModal) {
         closeMembresModal();
     }
+    if (event.target === photoModal) {
+        closePhotoModal();
+    }
 }
+
+// Gestion du modal photo
+let currentPhotoUrl = '';
+
+function openPhotoModal(photoUrl, victimeName) {
+    const modal = document.getElementById('photoModal');
+    const modalImg = document.getElementById('modalPhoto');
+    const photoInfo = document.getElementById('photoInfo');
+    
+    modal.style.display = 'block';
+    modalImg.src = photoUrl;
+    photoInfo.textContent = victimeName;
+    currentPhotoUrl = photoUrl;
+    
+    // Empêcher le scroll du body
+    document.body.style.overflow = 'hidden';
+}
+
+function closePhotoModal() {
+    const modal = document.getElementById('photoModal');
+    modal.style.display = 'none';
+    currentPhotoUrl = '';
+    
+    // Réactiver le scroll du body
+    document.body.style.overflow = 'auto';
+}
+
+function downloadPhoto() {
+    if (!currentPhotoUrl) return;
+    
+    // Extraire le nom du fichier de l'URL
+    const filename = currentPhotoUrl.split('/').pop();
+    
+    // Créer un lien temporaire et déclencher le téléchargement
+    const link = document.createElement('a');
+    link.href = currentPhotoUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Afficher un message de succès
+    showAlert('Photo téléchargée avec succès !', 'success');
+}
+
+// Fermer le modal avec la touche Échap
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePhotoModal();
+    }
+});
 </script>
 {% endblock %}
