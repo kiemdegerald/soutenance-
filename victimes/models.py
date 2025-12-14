@@ -84,11 +84,17 @@ class FicheVictime(models.Model):
         ('veuf', 'Veuf/Veuve'),
         ('union_libre', 'Union libre'),
     ]
+
+    STATUT_VICTIME_CHOICES = [
+        ('decede', 'Décédé'),
+        ('blesse', 'Blessé'),
+    ]
     
     # Informations personnelles
     nom = models.CharField(max_length=100, verbose_name="Nom")
     prenom = models.CharField(max_length=100, verbose_name="Prénom")
-    matricule = models.CharField(max_length=50, blank=True, default="", verbose_name="Matricule")
+    matricule = models.CharField(max_length=50, unique=True, verbose_name="INCO")
+    statut_victime = models.CharField(max_length=20, choices=STATUT_VICTIME_CHOICES, default='decede', verbose_name="Statut de la victime")
     date_naissance = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
     sexe = models.CharField(max_length=1, choices=SEXE_CHOICES, default='M', verbose_name="Sexe")
     nationalite = models.CharField(max_length=100, blank=True, verbose_name="Nationalité")

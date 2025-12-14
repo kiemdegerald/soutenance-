@@ -205,11 +205,22 @@ def victime_create(request):
                 # Si c'est une requête AJAX avec des erreurs de validation
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     errors = {}
+                    error_messages = []
                     for field, error_list in form.errors.items():
                         errors[field] = [str(error) for error in error_list]
+                        for error in error_list:
+                            if field == 'matricule':
+                                error_messages.append(f"INCO: {error}")
+                            elif field == '__all__':
+                                error_messages.append(str(error))
+                            else:
+                                field_label = form.fields[field].label or field
+                                error_messages.append(f"{field_label}: {error}")
+                    
+                    message = '<br>'.join(error_messages) if error_messages else 'Veuillez corriger les erreurs dans le formulaire.'
                     return JsonResponse({
                         'success': False,
-                        'message': 'Veuillez corriger les erreurs dans le formulaire.',
+                        'message': message,
                         'errors': errors
                     })
         else:

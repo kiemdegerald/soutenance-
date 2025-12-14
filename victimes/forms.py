@@ -25,15 +25,26 @@ class MembreFamilleForm(forms.ModelForm):
 class FicheVictimeForm(forms.ModelForm):
     class Meta:
         model = FicheVictime
-        fields = ['nom', 'prenom', 'matricule', 'grade', 'date_deces', 'lieu_deces', 'acte_deces']
+        fields = ['nom', 'prenom', 'matricule', 'grade', 'date_deces', 'lieu_deces', 'acte_deces', 'statut_victime']
         widgets = {
             'nom': forms.TextInput(attrs={'class': 'form-control'}),
             'prenom': forms.TextInput(attrs={'class': 'form-control'}),
-            'matricule': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Matricule'}),
+            'matricule': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'INCO', 'required': True}),
             'grade': forms.TextInput(attrs={'class': 'form-control'}),
             'date_deces': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'lieu_deces': forms.TextInput(attrs={'class': 'form-control'}),
+            'statut_victime': forms.Select(attrs={'class': 'form-control'}),
         }
+    
+    def clean_matricule(self):
+        matricule = self.cleaned_data.get('matricule')
+        if not matricule:
+            raise forms.ValidationError("Le champ INCO est obligatoire.")
+        # Vérifier les doublons uniquement pour les nouvelles instances
+        if not self.instance.pk:  # Nouvelle instance
+            if FicheVictime.objects.filter(matricule=matricule).exists():
+                raise forms.ValidationError(f"L'INCO '{matricule}' existe déjà dans la base de données.")
+        return matricule
 
 class DemandeAideForm(forms.ModelForm):
     class Meta:
