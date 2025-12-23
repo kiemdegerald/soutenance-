@@ -117,7 +117,7 @@
                onmouseout="this.firstElementChild.style.transform='translateY(0) scale(1)'">
                 <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 25px; border-radius: 15px; text-align: center; transition: transform 0.3s ease; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
                     <i class="fas fa-user-plus" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    <div style="font-weight: 600; font-size: 1.1rem;">Nouvelle Fiche Victime</div>
+                    <div style="font-weight: 600; font-size: 1.1rem;">Enregistrer Décès</div>
                     <div style="font-size: 0.8rem; opacity: 0.9; margin-top: 5px;">Créer une nouvelle fiche</div>
                 </div>
             </div>
@@ -238,7 +238,7 @@
                     <i class="fas fa-user-plus" style="font-size: 20px;"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-weight: 700;">Nouvelle Fiche Victime</h3>
+                    <h3 style="margin: 0; font-weight: 700;">Enregistrer Décès</h3>
                     <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 0.9rem;">Créer une nouvelle fiche pour une victime</p>
                 </div>
             </div>
@@ -349,13 +349,20 @@
                         Document officiel
                     </h4>
                     
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
-                            <i class="fas fa-file-pdf" style="margin-right: 5px;"></i> Acte de décès (PDF)
-                        </label>
-                        <input type="file" name="acte_deces" accept=".pdf" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease; background: white;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                    <div id="actesDecesContainer">
+                        <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                                    <i class="fas fa-file-pdf" style="margin-right: 5px;"></i> Acte de décès (PDF)
+                                </label>
+                                <input type="file" name="actes_deces" accept=".pdf,.jpg,.jpeg,.png" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease; background: white;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+                            </div>
+                            <button type="button" onclick="ajouterActeDeces()" style="margin-top: 32px; padding: 12px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                         <div style="font-size: 0.8rem; color: #6b7280; margin-top: 5px;">
-                            <i class="fas fa-info-circle"></i> Formats acceptés : PDF uniquement (max 10 MB)
+                            <i class="fas fa-info-circle"></i> Formats acceptés : PDF, JPG, PNG (max 10 MB par fichier)
                         </div>
                     </div>
                 </div>
@@ -493,16 +500,23 @@
                 <div style="background: #f0f9ff; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
                     <h4 style="color: #1f2937; margin: 0 0 20px 0; font-weight: 600; display: flex; align-items: center;">
                         <i class="fas fa-file-medical" style="margin-right: 10px; color: #059669;"></i>
-                        Document médical
+                        Documents médicaux
                     </h4>
                     
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
-                            <i class="fas fa-file-pdf" style="margin-right: 5px;"></i> Rapport médical / Certificat (PDF)
-                        </label>
-                        <input type="file" name="acte_deces" accept=".pdf" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease; background: white;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e7eb'">
+                    <div id="rapportsBlesseContainer">
+                        <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">
+                                    <i class="fas fa-file-pdf" style="margin-right: 5px;"></i> Rapport médical / Certificat
+                                </label>
+                                <input type="file" name="rapports_medicaux" accept=".pdf,.jpg,.jpeg,.png" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease; background: white;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e7eb'">
+                            </div>
+                            <button type="button" onclick="ajouterRapportBlesse()" style="margin-top: 32px; padding: 12px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                         <div style="font-size: 0.8rem; color: #6b7280; margin-top: 5px;">
-                            <i class="fas fa-info-circle"></i> Formats acceptés : PDF uniquement (max 10 MB)
+                            <i class="fas fa-info-circle"></i> Formats acceptés : PDF, JPG, PNG (max 10 MB par fichier)
                         </div>
                     </div>
                 </div>
@@ -536,6 +550,22 @@ function openVictimeModal() {
         modal.style.transition = 'opacity 0.3s ease';
         modal.style.opacity = '1';
     }, 10);
+}
+
+// Fonction pour ajouter un champ d'acte de décès
+function ajouterActeDeces() {
+    const container = document.getElementById('actesDecesContainer');
+    const newField = document.createElement('div');
+    newField.style.cssText = 'display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;';
+    newField.innerHTML = `
+        <div style="flex: 1;">
+            <input type="file" name="actes_deces" accept=".pdf,.jpg,.jpeg,.png" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease; background: white;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="padding: 12px 16px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.insertBefore(newField, container.lastElementChild);
 }
 
 // Fonction pour fermer le modal de création de victime
@@ -760,6 +790,22 @@ function openBlesseModal() {
         modal.style.transition = 'opacity 0.3s ease';
         modal.style.opacity = '1';
     }, 10);
+}
+
+// Fonction pour ajouter un champ de rapport pour blessé
+function ajouterRapportBlesse() {
+    const container = document.getElementById('rapportsBlesseContainer');
+    const newField = document.createElement('div');
+    newField.style.cssText = 'display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;';
+    newField.innerHTML = `
+        <div style="flex: 1;">
+            <input type="file" name="rapports_medicaux" accept=".pdf,.jpg,.jpeg,.png" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease; background: white;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="padding: 12px 16px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.insertBefore(newField, container.lastElementChild);
 }
 
 // Fonction pour fermer le modal blessé

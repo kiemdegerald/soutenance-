@@ -240,6 +240,17 @@
                     <i class="fas fa-times me-1"></i>Refuser
                 </button>
             </div>
+            {% elif demande.statut == 'validee' or demande.statut == 'refusee' %}
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px;">
+                <button onclick="annulerDecision({{ demande.id }})" class="btn btn-warning btn-sm" style="min-width: 200px; font-weight: 600;">
+                    <i class="fas fa-undo me-1"></i>Revenir en arrière
+                </button>
+                {% if demande.valide_par %}
+                <span style="font-size: 0.85rem; color: #6b7280; align-self: center;">
+                    Traitée par {{ demande.valide_par.first_name }} {{ demande.valide_par.last_name }}
+                </span>
+                {% endif %}
+            </div>
             {% endif %}
             {% endif %}
         </div>
@@ -368,6 +379,31 @@ function refuserDemande(demandeId) {
                 setTimeout(() => location.reload(), 1500);
             } else {
                 showAlert(data.message || 'Erreur lors du refus', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showAlert('Erreur de connexion', 'error');
+        });
+    }
+}
+
+function annulerDecision(demandeId) {
+    if (confirm('Êtes-vous sûr de vouloir annuler cette décision et remettre la demande en attente ?')) {
+        fetch(`/demandes/${demandeId}/annuler/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Décision annulée, demande remise en attente !', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert(data.message || 'Erreur lors de l\'annulation', 'error');
             }
         })
         .catch(error => {

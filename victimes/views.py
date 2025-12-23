@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import models
 from django.db.models import Q
 from .decorators import role_required
-from .models import Famille, MembreFamille, FicheVictime, DemandeAide, JournalAction, User
+from .models import Famille, MembreFamille, FicheVictime, DemandeAide, JournalAction, User, DocumentVictime
 from .forms import FamilleForm, MembreFamilleForm, FicheVictimeForm, DemandeAideForm
 
 # Vue pour détail AJAX famille/victime/membres
@@ -101,6 +101,40 @@ def demande_refuser(request, demande_id):
         return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
     
     return redirect('famille_list')
+
+# Annuler une décision et remettre en attente (responsable/admin)
+@role_required(['responsable', 'admin'])
+def demande_annuler_decision(request, demande_id):
+    demande = get_object_or_404(DemandeAide, pk=demande_id)
+    
+    if request.method == 'POST':
+        if demande.statut in ['validee', 'refusee']:
+            ancien_statut = demande.get_statut_display()
+            demande.statut = 'soumise'
+            demande.valide_par = None
+            demande.date_validation = None
+            demande.save()
+            # Journalisation
+            JournalAction.objects.create(
+                utilisateur=request.user,
+                action="Annulation de décision",
+                details=f"Demande {demande.id} remise en attente (était {ancien_statut}) pour la famille {demande.famille.id}"
+            )
+            
+            if request.headers.get('Content-Type') == 'application/json':
+                return JsonResponse({'success': True, 'message': 'Décision annulée, demande remise en attente.'})
+            else:
+                messages.success(request, "Décision annulée, demande remise en attente.")
+        else:
+            if request.headers.get('Content-Type') == 'application/json':
+                return JsonResponse({'success': False, 'message': 'Cette demande est déjà en attente.'})
+            else:
+                messages.info(request, "Cette demande est déjà en attente.")
+    
+    if request.headers.get('Content-Type') == 'application/json':
+        return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
+    
+    return redirect('suivi_aides')
 
 # Famille CRUD
 @role_required(['agent', 'responsable', 'admin'])
@@ -202,6 +236,25 @@ def victime_create(request):
                 victime = form.save(commit=False)
                 victime.cree_par = request.user
                 victime.save()
+                
+                # Gérer les actes de décès multiples
+                actes_deces = request.FILES.getlist('actes_deces')
+                for acte in actes_deces:
+                    DocumentVictime.objects.create(
+                        victime=victime,
+                        type_document='acte_deces',
+                        fichier=acte
+                    )
+                
+                # Gérer les rapports médicaux multiples
+                rapports = request.FILES.getlist('rapports_medicaux')
+                for rapport in rapports:
+                    DocumentVictime.objects.create(
+                        victime=victime,
+                        type_document='rapport_medical',
+                        fichier=rapport
+                    )
+                
                 # Journalisation
                 JournalAction.objects.create(
                     utilisateur=request.user,

@@ -20,6 +20,7 @@ urlpatterns = [
     path('demandes/ajouter/', views.demande_create, name='demande_create'),
     path('demandes/<int:demande_id>/valider/', views.demande_valider, name='demande_valider'),
     path('demandes/<int:demande_id>/refuser/', views.demande_refuser, name='demande_refuser'),
+    path('demandes/<int:demande_id>/annuler/', views.demande_annuler_decision, name='demande_annuler_decision'),
     path('demandes/validation/', views.demandes_a_valider, name='demandes_a_valider'),
     path('rapport/', views.rapport_familles_aidees, name='rapport_familles_aidees'),
     # URLs AJAX pour ajouter famille et membres depuis la liste des victimes

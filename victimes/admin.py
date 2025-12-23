@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.db.models import Q
 from datetime import date
-from .models import User, Famille, MembreFamille, FicheVictime, DemandeAide, JournalAction
+from .models import User, Famille, MembreFamille, FicheVictime, DemandeAide, JournalAction, DocumentVictime
 
 # Filtre personnalisé pour la ville avec toutes les villes de la base
 class VilleFilter(admin.SimpleListFilter):
@@ -106,3 +106,10 @@ class DemandeAideAdmin(admin.ModelAdmin):
 class JournalActionAdmin(admin.ModelAdmin):
     list_display = ("utilisateur", "action", "date_action")
     search_fields = ("utilisateur__username", "action", "details")
+
+@admin.register(DocumentVictime)
+class DocumentVictimeAdmin(admin.ModelAdmin):
+    list_display = ("victime", "type_document", "nom_fichier", "date_ajout")
+    list_filter = ("type_document", "date_ajout")
+    search_fields = ("victime__nom", "victime__prenom", "nom_fichier")
+    readonly_fields = ("date_ajout",)

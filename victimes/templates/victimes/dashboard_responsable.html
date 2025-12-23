@@ -459,6 +459,31 @@ function refuserDemande(demandeId) {
     }
 }
 
+function annulerDecision(demandeId) {
+    if (confirm('Êtes-vous sûr de vouloir annuler cette décision et remettre la demande en attente ?')) {
+        fetch(`/demandes/${demandeId}/annuler/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Décision annulée, demande remise en attente !', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert(data.message || 'Erreur lors de l\'annulation', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showAlert('Erreur de connexion', 'error');
+        });
+    }
+}
+
 function showAlert(message, type = 'info') {
     const alertDiv = document.createElement('div');
     alertDiv.style.cssText = `

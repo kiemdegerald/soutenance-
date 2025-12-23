@@ -1,6 +1,22 @@
 from django import forms
 from .models import Famille, MembreFamille, FicheVictime, DemandeAide
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
 class FamilleForm(forms.ModelForm):
     class Meta:
         model = Famille
@@ -24,9 +40,12 @@ class MembreFamilleForm(forms.ModelForm):
         }
 
 class FicheVictimeForm(forms.ModelForm):
+    actes_deces = MultipleFileField(required=False, label="Acte(s) de décès")
+    rapports_medicaux = MultipleFileField(required=False, label="Rapport(s) médical(aux)")
+    
     class Meta:
         model = FicheVictime
-        fields = ['nom', 'prenom', 'matricule', 'photo', 'grade', 'date_deces', 'lieu_deces', 'acte_deces', 'statut_victime']
+        fields = ['nom', 'prenom', 'matricule', 'photo', 'grade', 'date_deces', 'lieu_deces', 'statut_victime']
         widgets = {
             'nom': forms.TextInput(attrs={'class': 'form-control'}),
             'prenom': forms.TextInput(attrs={'class': 'form-control'}),

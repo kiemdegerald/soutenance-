@@ -141,6 +141,31 @@ class FicheVictime(models.Model):
         return f"{self.prenom} {self.nom}"
 
 
+class DocumentVictime(models.Model):
+    TYPE_CHOICES = [
+        ('acte_deces', 'Acte de décès'),
+        ('rapport_medical', 'Rapport médical'),
+    ]
+    
+    victime = models.ForeignKey(FicheVictime, related_name="documents", on_delete=models.CASCADE)
+    type_document = models.CharField(max_length=20, choices=TYPE_CHOICES, verbose_name="Type de document")
+    fichier = models.FileField(upload_to="documents_victimes/", verbose_name="Fichier")
+    nom_fichier = models.CharField(max_length=255, blank=True, verbose_name="Nom du fichier")
+    date_ajout = models.DateTimeField(auto_now_add=True, verbose_name="Date d'ajout")
+    
+    def save(self, *args, **kwargs):
+        if self.fichier and not self.nom_fichier:
+            self.nom_fichier = self.fichier.name
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.get_type_document_display()} - {self.victime.nom}"
+    
+    class Meta:
+        verbose_name = "Document victime"
+        verbose_name_plural = "Documents victimes"
+
+
 class DemandeAide(models.Model):
     TYPE_CHOICES = [
         ("scolaire", "Aide scolaire"),
