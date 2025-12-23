@@ -56,6 +56,7 @@ class MembreFamille(models.Model):
     nom = models.CharField(max_length=100, verbose_name="Nom")
     prenom = models.CharField(max_length=100, verbose_name="Prénom")
     date_naissance = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
+    ville = models.CharField(max_length=100, blank=True, verbose_name="Ville")
     sexe = models.CharField(max_length=1, choices=SEXE_CHOICES, default='M', verbose_name="Sexe")
     relation_victime = models.CharField(max_length=20, choices=RELATION_CHOICES, verbose_name="Relation avec la victime")
     profession = models.CharField(max_length=100, blank=True, verbose_name="Profession")
@@ -65,6 +66,18 @@ class MembreFamille(models.Model):
     # Champ de compatibilité avec l'ancien modèle
     lien_parente = models.CharField(max_length=50, blank=True, verbose_name="Lien de parenté (ancien)")
     date_creation = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def age(self):
+        """Calcule l'âge à partir de la date de naissance"""
+        if self.date_naissance:
+            from datetime import date
+            today = date.today()
+            age = today.year - self.date_naissance.year
+            if today.month < self.date_naissance.month or (today.month == self.date_naissance.month and today.day < self.date_naissance.day):
+                age -= 1
+            return age
+        return None
 
     def __str__(self):
         return f"{self.prenom} {self.nom} ({self.get_relation_victime_display()})"

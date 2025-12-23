@@ -14,11 +14,12 @@ class FamilleForm(forms.ModelForm):
 class MembreFamilleForm(forms.ModelForm):
     class Meta:
         model = MembreFamille
-        fields = ['nom', 'prenom', 'date_naissance', 'lien_parente']
+        fields = ['nom', 'prenom', 'date_naissance', 'ville', 'lien_parente']
         widgets = {
             'nom': forms.TextInput(attrs={'class': 'form-control'}),
             'prenom': forms.TextInput(attrs={'class': 'form-control'}),
             'date_naissance': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'ville': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Ouagadougou'}),
             'lien_parente': forms.TextInput(attrs={'class': 'form-control'}),
         }
 

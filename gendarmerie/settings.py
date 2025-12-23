@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-c11oewtjh)a#5k4ps7z1y=+($#c4sz37s#uo!2xgz%90pay%*2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -86,6 +86,14 @@ DATABASES = {
         # Remplacez les valeurs ci-dessus par vos vrais identifiants MySQL
     }
 }
+
+#configuration base de données sqlite (pour tests uniquement)
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": "db.sqlite3",
+#     }
+# }
 
 
 # Password validation
